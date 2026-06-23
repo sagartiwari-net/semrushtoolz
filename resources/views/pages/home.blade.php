@@ -92,6 +92,17 @@
             <div class="text-center">
                 <h2 class="section-heading">Semrush &amp; Ahrefs Group Buy Plans</h2>
                 <p class="section-sub mx-auto">Cheap Semrush account &amp; cheap Ahrefs account — group buy Semrush and group buy Ahrefs plans for every budget.</p>
+
+                <div class="mx-auto mt-8 max-w-5xl">
+                    <img
+                        src="https://ik.imagekit.io/webfiles/semrushtoolz.jpeg"
+                        alt="Semrush Group Buy"
+                        class="w-full rounded-2xl border border-line shadow-sm"
+                        loading="lazy"
+                        width="1280"
+                        height="427"
+                    >
+                </div>
             </div>
 
             <div class="mt-10">
