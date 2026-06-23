@@ -167,6 +167,19 @@
         @apply grid gap-8 sm:grid-cols-2 xl:grid-cols-4;
     }
 
+    /* Single bundle (combo) — full width on large screens so title does not crush */
+    .plans-grid-bundle {
+        @apply grid grid-cols-1 justify-items-stretch gap-8;
+    }
+
+    .plans-grid-bundle .plan-card {
+        @apply mx-auto w-full max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl;
+    }
+
+    .plans-grid-bundle .plan-card-featured .plan-card-heading {
+        @apply text-lg sm:text-xl lg:text-2xl;
+    }
+
     .plans-grid-3 {
         @apply grid gap-8 md:grid-cols-2 lg:grid-cols-3;
     }

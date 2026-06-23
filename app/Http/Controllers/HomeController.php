@@ -9,8 +9,8 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $mainPlans = PricingService::shopTools('semrush');
-        $ahrefsPlans = PricingService::shopTools('ahrefs');
+        $mainPlans = PricingService::mainPlans();
+        $ahrefsPlans = PricingService::ahrefsPlans();
         $bundlePlans = PricingService::bundlePlans();
 
         $planNotes = [

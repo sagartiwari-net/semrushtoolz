@@ -59,8 +59,12 @@
             @endif
         </div>
         <div class="min-w-0 flex-1">
-            <h3 class="text-base font-bold leading-snug text-ink sm:text-lg">{{ $plan['name'] }}</h3>
-            <p class="mt-0.5 text-xs text-ink-muted">{{ $plan['tagline'] }}</p>
+            <h3 @class([
+                'plan-card-heading font-bold leading-tight text-ink',
+                'text-lg sm:text-xl' => $featured,
+                'text-base sm:text-lg' => ! $featured,
+            ])>{{ $plan['name'] }}</h3>
+            <p class="mt-1 text-xs text-ink-muted sm:text-sm">{{ $plan['tagline'] }}</p>
         </div>
     </div>
 

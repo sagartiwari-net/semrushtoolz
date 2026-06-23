@@ -100,7 +100,11 @@
 
             <p class="mt-3 text-center text-xs text-ink-muted">Billing period and currency apply to all plans below.</p>
 
-            <div class="plans-grid mt-8">
+            <div @class([
+                'mt-8',
+                'plans-grid-bundle' => count($bundlePlans) === 1,
+                'plans-grid' => count($bundlePlans) !== 1,
+            ])>
                 @foreach ($bundlePlans as $index => $plan)
                     <x-plan-card :plan="$plan" :index="$index" variant="main" />
                 @endforeach
