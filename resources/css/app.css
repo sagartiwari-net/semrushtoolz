@@ -1,0 +1,558 @@
+@import 'tailwindcss';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/inter/800.css';
+
+@plugin 'daisyui' {
+    themes: semrushtoolz --default;
+}
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+/* ── Semrushtoolz Theme (from design/reference/index.html) ── */
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+    --color-accent: #f05a28;
+    --color-accent-light: #ff7448;
+    --color-accent-dim: rgba(240, 90, 40, 0.1);
+    --color-canvas: #f0f2f5;
+    --color-surface: #f7f8fa;
+    --color-ink: #111318;
+    --color-ink-secondary: #5a6072;
+    --color-ink-muted: #9ba3b4;
+    --color-line: #e4e7ee;
+    --color-line-strong: #d0d5e0;
+    --color-success: #16b364;
+    --color-warning: #e89a0d;
+    --color-danger: #e53e3e;
+    --color-blue: #3b6ef5;
+    --color-purple: #7c4dff;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-pill: 100px;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* DaisyUI custom theme */
+[data-theme='semrushtoolz'] {
+    color-scheme: light;
+    --rounded-box: 1rem;
+    --rounded-btn: 0.75rem;
+    --rounded-badge: 1rem;
+    --animation-btn: 0.2s;
+    --animation-input: 0.2s;
+    --btn-focus-scale: 0.98;
+    --border-btn: 1px;
+    --tab-border: 1px;
+    --tab-radius: 0.75rem;
+
+    --p: 62% 0.19 40;
+    --pc: 100% 0 0;
+    --s: 96% 0.005 260;
+    --sc: 21% 0.01 260;
+    --a: 70% 0.18 40;
+    --ac: 100% 0 0;
+    --n: 21% 0.01 260;
+    --nc: 98% 0.003 260;
+    --b1: 100% 0 0;
+    --b2: 97% 0.003 260;
+    --b3: 94% 0.005 260;
+    --bc: 21% 0.01 260;
+    --in: 58% 0.18 260;
+    --su: 62% 0.15 155;
+    --wa: 72% 0.15 75;
+    --er: 58% 0.2 25;
+}
+
+/* ── shadcn-inspired utility layer ── */
+@layer components {
+    .ui-card {
+        @apply rounded-2xl border border-line bg-white shadow-sm;
+    }
+
+    .ui-card-hover {
+        @apply rounded-2xl border border-line bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md;
+    }
+
+    .ui-btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200;
+    }
+
+    .ui-btn-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 bg-accent text-white shadow-sm hover:bg-accent-light active:scale-[0.98];
+    }
+
+    .ui-btn-outline {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 border border-line-strong bg-white text-ink-secondary hover:border-accent hover:text-accent;
+    }
+
+    .ui-btn-ghost {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 text-ink-secondary hover:bg-surface hover:text-ink;
+    }
+
+    .ui-badge {
+        @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+    }
+
+    .ui-badge-success {
+        @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-50 text-success;
+    }
+
+    .ui-badge-warning {
+        @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-amber-50 text-warning;
+    }
+
+    .ui-input {
+        @apply w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/15;
+    }
+
+    .ui-label {
+        @apply mb-1.5 block text-sm font-medium text-ink-secondary;
+    }
+
+    .auth-card {
+        @apply w-full;
+    }
+
+    .section-heading {
+        @apply text-2xl font-bold tracking-tight text-ink md:text-3xl;
+    }
+
+    .section-sub {
+        @apply mt-2 max-w-2xl text-ink-secondary;
+    }
+
+    .gradient-hero {
+        background:
+            radial-gradient(ellipse 80% 60% at 50% -10%, rgba(240, 90, 40, 0.14), transparent),
+            radial-gradient(ellipse 50% 40% at 90% 20%, rgba(59, 110, 245, 0.08), transparent),
+            linear-gradient(180deg, #ffffff 0%, var(--color-canvas) 100%);
+    }
+
+    .text-gradient {
+        @apply bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent;
+    }
+
+    .island-sidebar {
+        @apply flex w-60 shrink-0 flex-col overflow-hidden rounded-[20px] border border-line bg-white shadow-md;
+    }
+
+    .tool-letter {
+        @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white;
+    }
+
+    .tl-s { @apply bg-accent; }
+    .tl-a { @apply bg-blue; }
+    .tl-c { @apply bg-gradient-to-br from-accent to-purple; }
+    .tl-b { @apply bg-purple; }
+
+    /* ── Plan card animations ── */
+    .plans-section {
+        @apply mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8;
+    }
+
+    .plans-grid {
+        @apply grid gap-8 sm:grid-cols-2 xl:grid-cols-4;
+    }
+
+    .plans-grid-3 {
+        @apply grid gap-8 md:grid-cols-2 lg:grid-cols-3;
+    }
+
+    .shop-tools-grid {
+        @apply grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5;
+    }
+
+    .shop-tool-card {
+        @apply relative flex flex-col items-center rounded-2xl border border-line bg-white px-5 pb-5 pt-6 text-center shadow-sm transition-shadow duration-200 hover:shadow-md;
+    }
+
+    .shop-tool-badge {
+        @apply absolute -top-2.5 left-1/2 z-10 -translate-x-1/2 rounded-full bg-accent/10 px-2.5 py-0.5 text-[10px] font-bold text-accent;
+    }
+
+    .shop-tool-logo {
+        @apply flex h-[11rem] w-[11rem] shrink-0 items-center justify-center overflow-visible rounded-full bg-surface;
+    }
+
+    .shop-tool-logo img {
+        @apply h-[4.95rem] w-[4.95rem] object-contain;
+        scale: 2.2;
+    }
+
+    .shop-tool-dialog-logo {
+        @apply h-[4.95rem] w-[4.95rem] shrink-0 rounded-full object-contain;
+        scale: 2.2;
+    }
+
+    .shop-tool-name {
+        @apply mt-3 line-clamp-2 text-sm font-bold leading-snug text-ink;
+    }
+
+    .shop-tool-price {
+        @apply mt-2;
+    }
+
+    .shop-tool-actions {
+        @apply mt-4 flex w-full flex-col gap-2;
+    }
+
+    .shop-tool-dialog {
+        @apply w-[calc(100%-2rem)] max-w-md rounded-2xl border-0 bg-white p-0 shadow-xl;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        margin: 0;
+        z-index: 9999;
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
+    }
+
+    .shop-tool-dialog[open] {
+        display: block;
+    }
+
+    .shop-tool-dialog::backdrop {
+        background: rgba(17, 19, 24, 0.45);
+    }
+
+    .shop-tool-dialog-inner {
+        @apply relative p-6;
+    }
+
+    .shop-tool-dialog-close {
+        @apply absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-lg text-xl text-ink-muted hover:bg-surface;
+    }
+
+    .plan-card {
+        @apply min-w-0 rounded-2xl border border-line bg-white p-7 shadow-sm transition-all duration-300 sm:p-8;
+    }
+
+    .plan-card-default:hover {
+        @apply -translate-y-1 shadow-lg;
+        border-color: rgba(240, 90, 40, 0.25);
+    }
+
+    .plan-card-featured {
+        background: linear-gradient(white, white) padding-box,
+                    linear-gradient(135deg, #f05a28, #7c4dff, #f05a28) border-box;
+        border: 2px solid transparent;
+        animation: border-glow 4s ease infinite;
+    }
+
+    .plan-card-featured:hover {
+        @apply -translate-y-1.5 shadow-lg;
+    }
+
+    .plan-logo-ring {
+        @apply overflow-hidden;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .plan-logo-img {
+        @apply h-full w-full object-contain;
+        transform: scale(2.2);
+        transform-origin: center;
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .plan-logo-img-cover {
+        @apply object-cover;
+        transform: scale(2.2);
+    }
+
+    .plan-logo-img-wordmark {
+        transform: scale(1.53);
+    }
+
+    .plan-card:hover .plan-logo-img {
+        transform: scale(2.45);
+    }
+
+    .plan-card:hover .plan-logo-img-cover {
+        transform: scale(2.45);
+    }
+
+    .plan-card:hover .plan-logo-img-wordmark {
+        transform: scale(1.65);
+    }
+
+    .plan-card:hover .plan-logo-ring {
+        box-shadow: 0 4px 14px rgba(240, 90, 40, 0.12);
+    }
+
+    .plan-card-featured .plan-logo-ring {
+        animation: logo-float 3s ease-in-out infinite;
+    }
+
+    .plan-card-featured .plan-logo-ring:nth-child(2) {
+        animation-delay: 0.5s;
+    }
+
+    .check-pop {
+        transition: transform 0.2s ease;
+    }
+
+    .plan-card:hover .check-pop {
+        transform: scale(1.15);
+    }
+}
+
+@layer utilities {
+    .animate-fade-up {
+        opacity: 0;
+        animation: fade-up 0.6s ease forwards;
+    }
+
+    .animate-fade-up-slow {
+        opacity: 0;
+        animation: fade-up 0.8s ease forwards;
+    }
+}
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes logo-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+@keyframes border-glow {
+    0%, 100% { filter: drop-shadow(0 0 0 transparent); }
+    50% { filter: drop-shadow(0 0 12px rgba(240, 90, 40, 0.2)); }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.plan-shimmer-bar {
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #f05a28, #7c4dff, transparent);
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+}
+
+/* ── Dashboard & Admin panel ── */
+@layer components {
+    .dash-shell {
+        @apply flex min-h-screen gap-4 p-4;
+    }
+
+    .dash-nav-item {
+        @apply flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition;
+    }
+
+    .dash-nav-item-active {
+        @apply bg-accent text-white shadow-md shadow-accent/25;
+    }
+
+    .dash-nav-item-inactive {
+        @apply text-ink-secondary hover:bg-surface hover:text-ink;
+    }
+
+    .dash-page-title {
+        @apply mb-5 text-2xl font-extrabold tracking-tight text-ink;
+    }
+
+    .dash-stats-grid {
+        @apply mb-4 grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4;
+    }
+
+    .dash-stats-grid-3up {
+        @apply mb-4 grid grid-cols-2 gap-3.5;
+    }
+
+    .dash-stats-grid-3up > :first-child {
+        @apply col-span-2;
+    }
+
+    @media (min-width: 1024px) {
+        .dash-stats-grid-3up {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .dash-stats-grid-3up > :first-child {
+            grid-column: span 1;
+        }
+    }
+
+    .dash-stat-card {
+        @apply rounded-2xl border border-line bg-white p-5 shadow-sm;
+    }
+
+    .dash-card {
+        @apply mb-4 rounded-2xl border border-line bg-white p-5 shadow-sm sm:p-6;
+    }
+
+    .dash-card-title {
+        @apply mb-4 text-sm font-bold text-ink;
+    }
+
+    .dash-tools-grid {
+        @apply grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3;
+    }
+
+    .tool-access-grid {
+        @apply flex flex-wrap items-center justify-center gap-3.5 py-2;
+    }
+
+    .tool-access-btn {
+        @apply inline-block rounded-lg px-7 py-3.5 text-sm font-semibold text-white no-underline shadow-md transition hover:scale-[1.02] hover:brightness-110;
+        background: #ff6200;
+        box-shadow: 0 4px 12px rgba(255, 98, 0, 0.3);
+    }
+
+    .dash-tool-card {
+        @apply flex flex-col gap-3.5 rounded-2xl border border-line bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-md;
+    }
+
+    .dash-tool-card-featured {
+        @apply border-2 border-accent bg-gradient-to-br from-accent/5 to-white;
+    }
+
+    .dash-combo-hero {
+        @apply relative mb-5 overflow-hidden rounded-3xl border-0 bg-gradient-to-br from-ink via-[#16213e] to-[#0f3460] p-8 text-white;
+    }
+
+    .dash-table-wrap {
+        @apply overflow-x-auto rounded-2xl border border-line bg-white shadow-sm;
+    }
+
+    .dash-table {
+        @apply w-full min-w-[640px] text-left text-sm;
+    }
+
+    .dash-table th {
+        @apply border-b border-line bg-surface px-4 py-3 text-xs font-semibold uppercase tracking-wider text-ink-muted;
+    }
+
+    .dash-table td {
+        @apply border-b border-line px-4 py-3.5 text-ink-secondary;
+    }
+
+    .dash-table tr:last-child td {
+        @apply border-b-0;
+    }
+
+    .dash-badge-online {
+        @apply inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success;
+    }
+
+    .dash-badge-pending {
+        @apply inline-flex items-center gap-1 rounded-full bg-warning/10 px-2.5 py-0.5 text-xs font-semibold text-warning;
+    }
+
+    .dash-badge-offline {
+        @apply inline-flex items-center gap-1 rounded-full bg-ink/5 px-2.5 py-0.5 text-xs font-semibold text-ink-muted;
+    }
+
+    .dash-tabs {
+        @apply rounded-2xl border border-line bg-white shadow-sm;
+    }
+
+    .dash-tab-list {
+        @apply flex flex-wrap gap-1 border-b border-line px-4 pt-3 sm:px-5;
+    }
+
+    .dash-tab {
+        @apply -mb-px rounded-t-lg border border-transparent px-4 py-2.5 text-sm font-semibold text-ink-muted no-underline transition hover:text-ink;
+    }
+
+    .dash-tab-active {
+        @apply border-line border-b-white bg-white text-accent;
+    }
+
+    .dash-tab-panels {
+        @apply p-4 sm:p-5;
+    }
+
+    .dash-report-grid {
+        @apply mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4;
+    }
+
+    .dash-report-stat {
+        @apply rounded-xl border border-line bg-surface/50 px-4 py-3;
+    }
+
+    .dash-report-stat-label {
+        @apply text-xs font-semibold uppercase tracking-wider text-ink-muted;
+    }
+
+    .dash-report-stat-value {
+        @apply mt-1 text-xl font-bold text-ink;
+    }
+
+    .dash-mini-bar {
+        @apply flex h-2 overflow-hidden rounded-full bg-surface;
+    }
+
+    .dash-mini-bar-fill {
+        @apply h-full rounded-full bg-accent transition-all;
+    }
+
+    .admin-stat-icon-orange { @apply flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10 text-accent; }
+    .admin-stat-icon-green { @apply flex h-9 w-9 items-center justify-center rounded-xl bg-success/10 text-success; }
+    .admin-stat-icon-blue { @apply flex h-9 w-9 items-center justify-center rounded-xl bg-blue/10 text-blue; }
+    .admin-stat-icon-purple { @apply flex h-9 w-9 items-center justify-center rounded-xl bg-purple/10 text-purple; }
+}
+
+@layer base {
+    body {
+        @apply bg-canvas font-sans text-ink antialiased;
+    }
+}
+
+/* Floating WhatsApp support button */
+.whatsapp-float {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 9999px;
+    background: #25d366;
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.whatsapp-float:hover {
+    transform: scale(1.06);
+    box-shadow: 0 12px 28px rgba(37, 211, 102, 0.55);
+    color: #fff;
+}
+
+@media (min-width: 1024px) {
+    .whatsapp-float {
+        right: 1.5rem;
+        bottom: 1.5rem;
+    }
+}
