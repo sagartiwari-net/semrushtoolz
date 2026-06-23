@@ -69,17 +69,19 @@ class PricingService
 
     public static function mainPlans(): array
     {
-        return collect(self::shopTools(Tool::CATEGORY_SEO))
-            ->reject(fn ($t) => str_starts_with($t['id'] ?? '', 'ahrefs_'))
-            ->values()
+        return self::shopToolsQuery()
+            ->where('slug', 'not like', 'ahrefs%')
+            ->get()
+            ->map->toShopArray()
             ->all();
     }
 
     public static function ahrefsPlans(): array
     {
-        return collect(self::shopTools(Tool::CATEGORY_SEO))
-            ->filter(fn ($t) => str_starts_with($t['id'] ?? '', 'ahrefs_'))
-            ->values()
+        return self::shopToolsQuery()
+            ->where('slug', 'like', 'ahrefs_plan_%')
+            ->get()
+            ->map->toShopArray()
             ->all();
     }
 
