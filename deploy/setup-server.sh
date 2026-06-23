@@ -23,7 +23,12 @@ fi
 echo "==> Migrate"
 php artisan migrate --force
 
-echo "==> Seed system presets (safe — no demo users)"
+echo "==> Seed catalog + content (safe — no demo users)"
+php artisan db:seed --class=ToolSeeder --force
+php artisan db:seed --class=PlanSeeder --force
+php artisan db:seed --class=ToolAccessSeeder --force
+php artisan db:seed --class=ArticleSeeder --force
+php artisan db:seed --class=LegalPageSeeder --force
 php artisan db:seed --class=SiteSettingSeeder --force
 php artisan db:seed --class=EmailPresetSeeder --force
 
