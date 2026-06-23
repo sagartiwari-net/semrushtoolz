@@ -111,19 +111,9 @@
 
             <p class="mt-3 text-center text-xs text-ink-muted">Billing period and currency apply to all plans below.</p>
 
-            <div @class([
-                'mt-8',
-                'plans-grid-bundle' => count($bundlePlans) === 1,
-                'plans-grid' => count($bundlePlans) !== 1,
-            ])>
-                @foreach ($bundlePlans as $index => $plan)
+            <div class="plans-grid plans-grid-semrush mt-8">
+                @foreach ($semrushPlans as $index => $plan)
                     <x-plan-card :plan="$plan" :index="$index" variant="main" />
-                @endforeach
-            </div>
-
-            <div class="shop-tools-grid mt-8">
-                @foreach ($mainPlans as $index => $tool)
-                    <x-shop-tool-card :tool="$tool" :index="$index" />
                 @endforeach
             </div>
 
@@ -151,7 +141,7 @@
                 <p class="section-sub mx-auto">Need more credits and exports? Choose the Ahrefs plan that matches your usage. Save up to 20% on annual plans.</p>
             </div>
 
-            <div class="shop-tools-grid mt-12">
+            <div class="shop-tools-grid shop-tools-grid-ahrefs mt-12">
                 @foreach ($ahrefsPlans as $index => $tool)
                     <x-shop-tool-card :tool="$tool" :index="$index" />
                 @endforeach

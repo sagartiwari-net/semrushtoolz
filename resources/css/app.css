@@ -184,6 +184,25 @@
         }
     }
 
+    /* Homepage: Semrush + Combo + Site Audit in one row */
+    .plans-grid-semrush {
+        display: grid;
+        gap: 2rem;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    @media (width >= 50rem) {
+        .plans-grid-semrush {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (width >= 80rem) {
+        .plans-grid-semrush {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
     /* Single combo bundle — always one full-width card */
     .plans-grid-bundle {
         @apply grid grid-cols-1 gap-8;
@@ -234,6 +253,25 @@
     @media (width >= 80rem) {
         .shop-tools-grid {
             grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    /* Ahrefs: all 4 plans in one row on desktop */
+    .shop-tools-grid-ahrefs {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    @media (width >= 40rem) {
+        .shop-tools-grid-ahrefs {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (width >= 64rem) {
+        .shop-tools-grid-ahrefs {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
         }
     }
 
@@ -623,7 +661,14 @@
 @media (width >= 80rem) {
     .plans-grid,
     .plans-grid-4,
-    .shop-tools-grid {
+    .plans-grid-semrush,
+    .shop-tools-grid:not(.shop-tools-grid-ahrefs) {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (width >= 64rem) {
+    .shop-tools-grid-ahrefs {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }

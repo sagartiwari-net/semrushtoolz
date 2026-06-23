@@ -9,7 +9,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $mainPlans = PricingService::mainPlans();
+        $semrushPlans = PricingService::homepageSemrushPlans();
         $ahrefsPlans = PricingService::ahrefsPlans();
         $bundlePlans = PricingService::bundlePlans();
 
@@ -82,6 +82,6 @@ class HomeController extends Controller
 
         $affiliateCommissionRate = (int) (SiteSetting::affiliateConfig()['commission_rate'] * 100);
 
-        return view('pages.home', compact('mainPlans', 'ahrefsPlans', 'bundlePlans', 'planNotes', 'faqs', 'stats', 'seo', 'affiliateCommissionRate'));
+        return view('pages.home', compact('semrushPlans', 'ahrefsPlans', 'bundlePlans', 'planNotes', 'faqs', 'stats', 'seo', 'affiliateCommissionRate'));
     }
 }

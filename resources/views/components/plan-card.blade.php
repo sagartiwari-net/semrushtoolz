@@ -102,8 +102,12 @@
     </ul>
 
     <a
-        href="{{ \App\Support\CheckoutLink::forPlan($plan['id']) }}"
-        data-checkout-plan="{{ $plan['id'] }}"
+        href="{{ ($plan['checkout_type'] ?? 'plan') === 'tool' ? \App\Support\CheckoutLink::forTool($plan['id']) : \App\Support\CheckoutLink::forPlan($plan['id']) }}"
+        @if (($plan['checkout_type'] ?? 'plan') === 'tool')
+            data-checkout-tool="{{ $plan['id'] }}"
+        @else
+            data-checkout-plan="{{ $plan['id'] }}"
+        @endif
         @class([
             'mt-6 w-full text-center',
             'ui-btn-primary' => $featured,

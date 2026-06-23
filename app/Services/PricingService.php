@@ -85,6 +85,59 @@ class PricingService
             ->all();
     }
 
+    /** Semrush + combo + site audit — homepage featured row (plan-card layout) */
+    public static function homepageSemrushPlans(): array
+    {
+        $order = ['semrush', 'combo', 'semrush_site_audit'];
+        $plans = [];
+
+        $tools = self::shopToolsQuery()
+            ->whereIn('slug', ['semrush', 'semrush_site_audit'])
+            ->get()
+            ->keyBy('slug');
+
+        foreach (['semrush', 'semrush_site_audit'] as $slug) {
+            if ($tool = $tools->get($slug)) {
+                $plans[$slug] = self::toolToPlanArray($tool);
+            }
+        }
+
+        $combo = collect(self::bundlePlans())->firstWhere('id', 'combo');
+        if ($combo) {
+            $plans['combo'] = array_merge($combo, ['checkout_type' => 'plan']);
+        }
+
+        return collect($order)
+            ->map(fn (string $slug) => $plans[$slug] ?? null)
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    public static function toolToPlanArray(Tool $tool): array
+    {
+        $config = collect(config('pricing.main_plans'))->firstWhere('id', $tool->slug);
+
+        $features = $config['features'] ?? $tool->shop_features ?? [];
+        $features = collect($features)
+            ->map(fn ($f) => is_array($f) ? $f : ['text' => $f])
+            ->all();
+
+        return [
+            'id' => $tool->slug,
+            'name' => $config['name'] ?? $tool->name,
+            'tagline' => $config['tagline'] ?? $tool->description,
+            'price_inr' => $tool->price_inr,
+            'price_usd' => $tool->price_usd,
+            'logo' => $config['logo'] ?? $tool->thumbnailUrl(),
+            'logo_alt' => $config['logo_alt'] ?? $tool->name,
+            'featured' => (bool) ($config['featured'] ?? false),
+            'badge' => $config['badge'] ?? $tool->shop_badge,
+            'features' => $features,
+            'checkout_type' => 'tool',
+        ];
+    }
+
     public static function allShopPlans(): array
     {
         return array_merge(self::shopTools(), self::bundlePlans());
