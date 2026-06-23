@@ -163,4 +163,11 @@ return [
         3 => ['days' => 3, 'label' => '3 Days', 'price_inr' => 140, 'price_usd' => 2.5],
         5 => ['days' => 5, 'label' => '5 Days', 'price_inr' => 180, 'price_usd' => 3.5],
     ],
+
+    'trial_plan_features' => [
+        'Semrush Full Access',
+        'Ahrefs Plan 1 Included',
+        ['text' => 'Bonus Tools', 'marker' => '**'],
+        'One-Click Cloud Access',
+    ],
 ];

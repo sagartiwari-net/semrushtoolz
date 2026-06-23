@@ -11,7 +11,7 @@ function formatMoney(amount, currency) {
 
 function updateTrialCard(root) {
     const { currency } = getPricingState();
-    const activeBtn = root.querySelector('[data-trial-duration-btn].bg-ink')
+    const activeBtn = root.querySelector('[data-trial-duration-btn].is-active')
         ?? root.querySelector('[data-trial-duration-btn]');
 
     if (!activeBtn) {
@@ -22,7 +22,7 @@ function updateTrialCard(root) {
     const inr = parseFloat(activeBtn.dataset.priceInr || '0');
     const usd = parseFloat(activeBtn.dataset.priceUsd || '0');
     const amount = currency === 'inr' ? inr : usd;
-    const card = root.querySelector('.plan-card');
+    const card = root.querySelector('.trial-plan-card');
 
     if (card) {
         card.dataset.priceInr = String(inr);
@@ -55,11 +55,10 @@ export function initTrialPricing() {
     root.querySelectorAll('[data-trial-duration-btn]').forEach((btn) => {
         btn.addEventListener('click', () => {
             root.querySelectorAll('[data-trial-duration-btn]').forEach((other) => {
-                other.classList.remove('bg-ink', 'text-white');
-                other.classList.add('text-ink-secondary');
+                other.classList.remove('is-active', 'bg-ink', 'text-white');
+                other.classList.remove('is-active');
             });
-            btn.classList.add('bg-ink', 'text-white');
-            btn.classList.remove('text-ink-secondary');
+            btn.classList.add('is-active');
             updateTrialCard(root);
         });
     });

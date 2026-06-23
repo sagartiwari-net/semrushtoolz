@@ -93,6 +93,9 @@ class PricingService
         return array_merge($plan->toPricingArray(), [
             'is_trial' => true,
             'checkout_type' => 'plan',
+            'features' => collect(config('pricing.trial_plan_features', $plan->features ?? []))
+                ->map(fn ($f) => is_array($f) ? $f : ['text' => $f])
+                ->all(),
         ]);
     }
 

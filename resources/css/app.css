@@ -409,6 +409,54 @@
     .plan-card:hover .check-pop {
         transform: scale(1.15);
     }
+
+    .trial-plan-shell {
+        @apply w-full px-0;
+    }
+
+    .trial-plan-card {
+        @apply relative overflow-hidden rounded-3xl border border-line bg-gradient-to-br from-white via-white to-purple/5 p-6 shadow-md sm:p-8 lg:p-10;
+    }
+
+    .trial-plan-badge {
+        @apply absolute right-5 top-5 rounded-full bg-purple/10 px-3 py-1 text-xs font-bold text-purple;
+    }
+
+    .trial-plan-layout {
+        @apply grid gap-8 lg:grid-cols-[1.4fr_0.9fr] lg:items-start lg:gap-10;
+    }
+
+    .trial-plan-brand {
+        @apply flex flex-col gap-4 sm:flex-row sm:items-center;
+    }
+
+    .trial-plan-logos {
+        @apply flex shrink-0 items-center gap-2;
+    }
+
+    .trial-plan-features {
+        @apply mt-6 grid gap-2.5 sm:grid-cols-2;
+    }
+
+    .trial-plan-side {
+        @apply rounded-2xl border border-line bg-surface/70 p-5 sm:p-6;
+    }
+
+    .trial-plan-durations {
+        @apply mt-3 grid grid-cols-3 gap-2;
+    }
+
+    .trial-duration-btn {
+        @apply rounded-xl border border-line bg-white px-2 py-2.5 text-center text-sm text-ink-secondary transition hover:border-purple/30;
+    }
+
+    .trial-duration-btn.is-active {
+        @apply border-purple bg-purple text-white shadow-sm;
+    }
+
+    .trial-plan-price-box {
+        @apply mt-5 rounded-xl border border-line bg-white px-4 py-4 text-center;
+    }
 }
 
 @layer utilities {
