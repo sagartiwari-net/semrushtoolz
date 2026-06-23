@@ -14,13 +14,15 @@ class SubscribeController extends Controller
             'plan' => ['nullable', 'string', 'exists:plans,slug', 'required_without:tool'],
             'tool' => ['nullable', 'string', 'exists:tools,slug', 'required_without:plan'],
             'duration_months' => ['nullable', 'integer', Rule::in(array_keys(config('pricing.durations')))],
+            'duration_days' => ['nullable', 'integer', Rule::in(array_keys(config('pricing.trial_durations', [])))],
             'currency' => ['nullable', 'string', Rule::in(['inr', 'usd'])],
         ]);
 
         $params = array_filter([
             'plan' => $request->input('plan'),
             'tool' => $request->input('tool'),
-            'duration_months' => (int) $request->input('duration_months', 1),
+            'duration_months' => $request->filled('duration_months') ? (int) $request->input('duration_months') : null,
+            'duration_days' => $request->filled('duration_days') ? (int) $request->input('duration_days') : null,
             'currency' => $request->input('currency', 'inr'),
         ], fn ($value) => $value !== null && $value !== '');
 

@@ -106,7 +106,14 @@ class SubscriptionService
         $order->load(['plan', 'tool']);
         $startsAt = now();
         $isPayPal = $order->payment_method === 'paypal';
-        $endsAt = $isPayPal ? now()->addMonth() : now()->addMonths($order->duration_months);
+
+        if ($order->duration_days) {
+            $endsAt = now()->addDays($order->duration_days);
+        } elseif ($isPayPal) {
+            $endsAt = now()->addMonth();
+        } else {
+            $endsAt = now()->addMonths($order->duration_months);
+        }
 
         $user = $order->user;
 
@@ -127,6 +134,7 @@ class SubscriptionService
             'tool_id' => $order->tool_id,
             'status' => 'active',
             'duration_months' => $order->duration_months,
+            'duration_days' => $order->duration_days,
             'currency' => $order->currency,
             'amount_paid' => $order->total,
             'starts_at' => $startsAt,

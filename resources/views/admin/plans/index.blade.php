@@ -25,7 +25,12 @@
             <tbody>
                 @foreach ($plans as $plan)
                     <tr>
-                        <td class="font-medium text-ink">{{ $plan->name }}</td>
+                        <td class="font-medium text-ink">
+                            {{ $plan->name }}
+                            @if ($plan->is_trial)
+                                <span class="ui-badge ml-1 bg-purple/10 text-purple">Trial</span>
+                            @endif
+                        </td>
                         <td><code class="text-xs">#{{ $plan->id }}</code></td>
                         <td><span class="ui-badge bg-surface text-ink-secondary">{{ $plan->display_group }}</span></td>
                         <td class="text-xs text-ink-muted">{{ $plan->tools->pluck('name')->join(', ') ?: '—' }}</td>

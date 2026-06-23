@@ -56,15 +56,44 @@ class PricingService
         return $query;
     }
 
-    /** Bundle / combo plans only */
+    /** Bundle / combo plans only (excludes trial) */
     public static function bundlePlans(): array
     {
         return Plan::where('is_active', true)
             ->where('is_bundle', true)
+            ->where('is_trial', false)
             ->orderBy('sort_order')
             ->get()
             ->map->toPricingArray()
             ->all();
+    }
+
+    public static function trialDurations(): array
+    {
+        return config('pricing.trial_durations', []);
+    }
+
+    public static function trialPlan(): ?Plan
+    {
+        return Plan::query()
+            ->where('is_active', true)
+            ->where('is_trial', true)
+            ->orderBy('sort_order')
+            ->first();
+    }
+
+    public static function trialPlanForHomepage(): ?array
+    {
+        $plan = self::trialPlan();
+
+        if (! $plan) {
+            return null;
+        }
+
+        return array_merge($plan->toPricingArray(), [
+            'is_trial' => true,
+            'checkout_type' => 'plan',
+        ]);
     }
 
     public static function mainPlans(): array
@@ -195,6 +224,7 @@ class PricingService
     {
         return [
             'durations' => self::durations(),
+            'trialDurations' => self::trialDurations(),
             'paymentMethods' => self::paymentMethods(),
         ];
     }

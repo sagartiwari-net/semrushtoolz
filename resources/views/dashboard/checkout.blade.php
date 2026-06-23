@@ -16,6 +16,12 @@
         </div>
     @endif
 
+    @if ($isTrial ?? false)
+        <div class="mb-5 rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-ink-secondary">
+            <strong>Trial plan:</strong> fixed price only — no coupons, wallet, or discounts apply. Access ends automatically when the trial period ends.
+        </div>
+    @endif
+
     @if (!empty($referralBonusHint))
         <div class="mb-5 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-ink-secondary">
             Your <strong>{{ $referralBonusHint['percent'] }}% referral bonus</strong> applies to <strong>1-month</strong> plans only
@@ -42,7 +48,11 @@
                 @else
                     <input type="hidden" name="plan" value="{{ $plan->slug }}">
                 @endif
-                <input type="hidden" name="duration_months" value="{{ $durationMonths }}">
+                @if ($isTrial ?? false)
+                    <input type="hidden" name="duration_days" value="{{ $durationDays }}">
+                @else
+                    <input type="hidden" name="duration_months" value="{{ $durationMonths }}">
+                @endif
                 <input type="hidden" name="currency" value="{{ $currency }}">
                 @if ($appliedCoupon)
                     <input type="hidden" name="coupon_code" value="{{ $appliedCoupon->code }}">
@@ -147,13 +157,14 @@
                             {{ $currency === 'inr' ? '₹' : '$' }}{{ number_format($totals['total'], $currency === 'usd' && $totals['total'] < 100 ? 2 : 0) }}
                         </dd>
                     </div>
-                    @if ($durationMonths > 1)
+                    @if (! ($isTrial ?? false) && $durationMonths > 1)
                         <div class="text-xs text-ink-muted">
                             {{ $currency === 'inr' ? '₹' : '$' }}{{ number_format($totals['per_month'], $currency === 'usd' && $totals['per_month'] < 100 ? 2 : 0) }}/month effective
                         </div>
                     @endif
                 </dl>
 
+                @unless ($isTrial ?? false)
                 <div class="mt-4 border-t border-line pt-4">
                     <p class="text-xs font-bold uppercase tracking-wider text-ink-muted">Coupon code</p>
                     <form method="GET" action="{{ route('dashboard.checkout') }}" class="mt-2 flex gap-2">
@@ -178,6 +189,7 @@
                         <p class="mt-2 text-xs text-success">{{ $appliedCoupon->discountLabel() }} applied.</p>
                     @endif
                 </div>
+                @endunless
 
                 <ul class="mt-5 space-y-2 border-t border-line pt-4">
                     @foreach (($tool?->shop_features ?? $plan?->features) ?? [] as $feature)

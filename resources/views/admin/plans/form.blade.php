@@ -9,6 +9,9 @@
         @if ($plan->exists)
             <p class="mt-1 text-sm text-ink-muted">Plan ID: <strong class="font-mono text-ink">#{{ $plan->id }}</strong> — sent automatically to proxy/extension servers for access verification.</p>
         @endif
+        @if ($plan->slug === 'combo_trial')
+            <p class="mt-2 text-sm text-ink-muted">Trial prices (1 / 3 / 5 days) are configured in <code class="text-xs">config/pricing.php</code> → <code class="text-xs">trial_durations</code>.</p>
+        @endif
     </div>
 
     <form method="POST" action="{{ $plan->exists ? route('admin.plans.update', $plan) : route('admin.plans.store') }}" class="dash-card max-w-3xl space-y-5">
@@ -57,6 +60,7 @@
             <div><label class="ui-label">Sort order</label><input class="ui-input" type="number" name="sort_order" value="{{ old('sort_order', $plan->sort_order ?? 0) }}"></div>
             <div class="flex flex-col gap-2 pt-6 text-sm">
                 <label class="flex gap-2"><input type="checkbox" name="is_bundle" value="1" @checked(old('is_bundle', $plan->is_bundle ?? true))> Bundle plan (show in shop)</label>
+                <label class="flex gap-2"><input type="checkbox" name="is_trial" value="1" @checked(old('is_trial', $plan->is_trial))> Trial plan (fixed day-based pricing)</label>
                 <label class="flex gap-2"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $plan->is_featured))> Featured</label>
                 <label class="flex gap-2"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $plan->is_active ?? true))> Active</label>
                 <label class="flex gap-2"><input type="checkbox" name="show_on_homepage" value="1" @checked(old('show_on_homepage', $plan->show_on_homepage ?? true))> Show on homepage</label>

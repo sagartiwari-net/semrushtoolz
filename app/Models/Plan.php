@@ -11,7 +11,7 @@ class Plan extends Model
     protected $fillable = [
         'slug', 'product_type', 'display_group', 'name', 'tagline',
         'price_inr', 'price_usd', 'features', 'badge',
-        'is_featured', 'is_active', 'show_on_homepage', 'is_bundle', 'sort_order', 'amember_product_ids',
+        'is_featured', 'is_active', 'show_on_homepage', 'is_bundle', 'is_trial', 'sort_order', 'amember_product_ids',
     ];
 
     protected function casts(): array
@@ -23,7 +23,13 @@ class Plan extends Model
             'is_active' => 'boolean',
             'show_on_homepage' => 'boolean',
             'is_bundle' => 'boolean',
+            'is_trial' => 'boolean',
         ];
+    }
+
+    public function isTrial(): bool
+    {
+        return (bool) $this->is_trial;
     }
 
     public function tools(): BelongsToMany
@@ -68,7 +74,7 @@ class Plan extends Model
     public function toPricingArray(): array
     {
         $logos = match ($this->slug) {
-            'combo' => [
+            'combo', 'combo_trial' => [
                 'logos' => [
                     ['src' => 'https://ik.imagekit.io/webfiles/semrush.svg?updatedAt=1771433645768', 'alt' => 'Semrush'],
                     ['src' => 'https://ik.imagekit.io/webfiles/ahrefs.svg?updatedAt=1771433639094', 'alt' => 'Ahrefs'],

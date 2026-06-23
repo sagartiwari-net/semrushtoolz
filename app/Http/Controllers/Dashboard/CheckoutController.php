@@ -45,20 +45,21 @@ class CheckoutController extends Controller
             'plan' => ['nullable', 'string', 'exists:plans,slug', 'required_without:tool'],
             'tool' => ['nullable', 'string', 'exists:tools,slug', 'required_without:plan'],
             'duration_months' => ['nullable', 'integer', Rule::in(array_keys(config('pricing.durations')))],
+            'duration_days' => ['nullable', 'integer', Rule::in(array_keys(config('pricing.trial_durations', [])))],
             'currency' => ['nullable', 'string', Rule::in(['inr', 'usd'])],
             'coupon_code' => ['nullable', 'string', 'max:40'],
         ]);
 
-        $durationMonths = (int) $request->input('duration_months', 1);
         $currency = $request->input('currency', 'inr');
         $activeSubs = $this->subscriptions->activeSubscriptions(Auth::user());
-        $duration = config("pricing.durations.{$durationMonths}");
         $couponCode = strtoupper(trim((string) $request->input('coupon_code', '')));
         $user = Auth::user();
         $walletConfig = SiteSetting::walletConfig();
 
         if ($request->filled('tool')) {
             $tool = Tool::where('slug', $request->tool)->where('is_active', true)->where('show_in_shop', true)->firstOrFail();
+            $durationMonths = (int) $request->input('duration_months', 1);
+            $duration = config("pricing.durations.{$durationMonths}");
             $totals = $this->orders->calculateToolTotals($tool, $durationMonths, $currency);
             $checkoutData = $this->withCouponTotals($totals, $couponCode, $currency, $durationMonths, toolId: $tool->id);
 
@@ -67,8 +68,10 @@ class CheckoutController extends Controller
                 'plan' => null,
                 'itemName' => $tool->name,
                 'durationMonths' => $durationMonths,
+                'durationDays' => null,
                 'durationLabel' => $duration['label'] ?? "{$durationMonths} Month(s)",
                 'currency' => $currency,
+                'isTrial' => false,
                 'paymentMethods' => $this->orders->availablePaymentMethods($currency, $user, (float) $checkoutData['totals']['total']),
                 'walletBalance' => $this->wallet->balance($user),
                 'walletEnabled' => $walletConfig['enabled'],
@@ -79,6 +82,42 @@ class CheckoutController extends Controller
         }
 
         $plan = Plan::where('slug', $request->plan)->where('is_active', true)->where('is_bundle', true)->firstOrFail();
+
+        if ($plan->isTrial()) {
+            $durationDays = (int) $request->input('duration_days', 1);
+            $trialTier = config("pricing.trial_durations.{$durationDays}");
+            $totals = $this->orders->finalizeTrialTotals(
+                $this->orders->calculateTrialTotals($durationDays, $currency),
+                $currency,
+            );
+
+            return view('dashboard.checkout', array_merge($this->shared(), [
+                'totals' => $totals,
+                'couponCode' => '',
+                'appliedCoupon' => null,
+                'couponError' => null,
+                'referralBonusHint' => null,
+                'gstLabel' => GstService::config()['label'],
+            ], [
+                'plan' => $plan,
+                'tool' => null,
+                'itemName' => $plan->name,
+                'durationMonths' => null,
+                'durationDays' => $durationDays,
+                'durationLabel' => $trialTier['label'] ?? "{$durationDays} Day(s)",
+                'currency' => $currency,
+                'isTrial' => true,
+                'paymentMethods' => $this->orders->availablePaymentMethods($currency, $user, (float) $totals['total'], true),
+                'walletBalance' => $this->wallet->balance($user),
+                'walletEnabled' => false,
+                'activeSubscriptions' => $activeSubs,
+                'pricingConfig' => PricingService::jsConfig(),
+                'activeNav' => 'dashboard.shop',
+            ]));
+        }
+
+        $durationMonths = (int) $request->input('duration_months', 1);
+        $duration = config("pricing.durations.{$durationMonths}");
         $totals = $this->orders->calculateTotals($plan, $durationMonths, $currency);
         $checkoutData = $this->withCouponTotals($totals, $couponCode, $currency, $durationMonths, planId: $plan->id);
 
@@ -87,8 +126,10 @@ class CheckoutController extends Controller
             'tool' => null,
             'itemName' => $plan->name,
             'durationMonths' => $durationMonths,
+            'durationDays' => null,
             'durationLabel' => $duration['label'] ?? "{$durationMonths} Month(s)",
             'currency' => $currency,
+            'isTrial' => false,
             'paymentMethods' => $this->orders->availablePaymentMethods($currency, $user, (float) $checkoutData['totals']['total']),
             'walletBalance' => $this->wallet->balance($user),
             'walletEnabled' => $walletConfig['enabled'],
@@ -115,14 +156,25 @@ class CheckoutController extends Controller
                 );
             } else {
                 $plan = Plan::where('slug', $request->plan)->where('is_active', true)->where('is_bundle', true)->firstOrFail();
-                $order = $this->orders->createOrder(
-                    Auth::user(),
-                    $plan,
-                    (int) $request->duration_months,
-                    $request->currency,
-                    $request->payment_method,
-                    $couponCode
-                );
+
+                if ($plan->isTrial()) {
+                    $order = $this->orders->createTrialOrder(
+                        Auth::user(),
+                        $plan,
+                        (int) $request->duration_days,
+                        $request->currency,
+                        $request->payment_method,
+                    );
+                } else {
+                    $order = $this->orders->createOrder(
+                        Auth::user(),
+                        $plan,
+                        (int) $request->duration_months,
+                        $request->currency,
+                        $request->payment_method,
+                        $couponCode
+                    );
+                }
             }
         } catch (\RuntimeException $e) {
             return back()->withInput()->withErrors(['payment_method' => $e->getMessage()]);

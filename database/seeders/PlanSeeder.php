@@ -42,7 +42,29 @@ class PlanSeeder extends Seeder
         $toolIds = Tool::whereIn('slug', ['semrush', 'ahrefs', 'ahrefs_bar'])->pluck('id');
         $model->tools()->sync($toolIds);
 
-        Plan::where('slug', '!=', 'combo')->update([
+        $trial = Plan::updateOrCreate(
+            ['slug' => 'combo_trial'],
+            [
+                'product_type' => 'combo_trial',
+                'display_group' => 'main',
+                'name' => 'Semrush + Ahrefs Trial',
+                'tagline' => 'Test the full combo — Semrush & Ahrefs access',
+                'price_inr' => config('pricing.trial_durations.1.price_inr', 100),
+                'price_usd' => (int) config('pricing.trial_durations.1.price_usd', 2),
+                'features' => $features,
+                'badge' => 'Trial',
+                'is_featured' => false,
+                'is_active' => true,
+                'is_bundle' => true,
+                'is_trial' => true,
+                'show_on_homepage' => true,
+                'sort_order' => 2,
+            ]
+        );
+
+        $trial->tools()->sync($toolIds);
+
+        Plan::whereNotIn('slug', ['combo', 'combo_trial'])->update([
             'is_bundle' => false,
             'is_active' => false,
             'show_on_homepage' => false,

@@ -147,6 +147,10 @@
                 @endforeach
             </div>
 
+            @if ($trialPlan)
+                <x-trial-plan-section :plan="$trialPlan" />
+            @endif
+
             <p class="mx-auto mt-8 max-w-2xl text-center text-xs text-ink-muted">
                 All Ahrefs plans include Keyword Explorer and Site Explorer with one-click cloud access.
             </p>

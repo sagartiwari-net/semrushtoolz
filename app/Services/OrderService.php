@@ -171,6 +171,74 @@ class OrderService
         );
     }
 
+    public function createTrialOrder(
+        User $user,
+        Plan $plan,
+        int $durationDays,
+        string $currency,
+        string $paymentMethod,
+    ): Order {
+        if (! $plan->isTrial()) {
+            throw new \InvalidArgumentException('Not a trial plan.');
+        }
+
+        if (in_array($paymentMethod, ['wallet', 'paypal'], true)) {
+            throw new \RuntimeException('Trial plans cannot be paid with wallet or PayPal.');
+        }
+
+        if ($paymentMethod === 'wallet' && $currency !== 'inr') {
+            throw new \RuntimeException('Wallet payments are only available in INR.');
+        }
+
+        $totals = $this->finalizeTrialTotals(
+            $this->calculateTrialTotals($durationDays, $currency),
+            $currency,
+        );
+
+        return $this->finalizeNewOrder(
+            $this->storeOrder(
+                $user,
+                $totals,
+                0,
+                $currency,
+                $paymentMethod,
+                planId: $plan->id,
+                durationDays: $durationDays,
+            ),
+            $paymentMethod,
+        );
+    }
+
+    public function calculateTrialTotals(int $durationDays, string $currency): array
+    {
+        $tier = config("pricing.trial_durations.{$durationDays}");
+
+        if (! $tier) {
+            throw new \InvalidArgumentException('Invalid trial duration.');
+        }
+
+        $price = (float) ($currency === 'inr' ? $tier['price_inr'] : $tier['price_usd']);
+
+        return [
+            'subtotal' => $price,
+            'discount' => 0,
+            'duration_discount' => 0,
+            'total' => $price,
+            'discount_percent' => 0,
+            'per_month' => $price,
+            'coupon' => null,
+            'coupon_code' => null,
+            'coupon_discount' => 0.0,
+            'referral_bonus_discount' => 0.0,
+            'referral_bonus_percent' => null,
+        ];
+    }
+
+    public function finalizeTrialTotals(array $totals, string $currency): array
+    {
+        return GstService::applyToTotals($totals, $currency, 1);
+    }
+
     public function createTopupOrder(User $user, int $amount, string $paymentMethod): Order
     {
         if (! in_array($amount, SiteSetting::walletConfig()['topup_amounts'], true)) {
@@ -248,6 +316,7 @@ class OrderService
         ?int $planId = null,
         ?int $toolId = null,
         string $orderType = 'subscription',
+        ?int $durationDays = null,
     ): Order {
         $expiryMinutes = match ($paymentMethod) {
             'upi' => SiteSetting::buyahrefConfig()['order_expiry_minutes'],
@@ -273,6 +342,7 @@ class OrderService
             'order_number' => Order::generateOrderNumber(),
             'order_type' => $orderType,
             'duration_months' => $durationMonths,
+            'duration_days' => $durationDays,
             'currency' => $currency,
             'subtotal' => $totals['subtotal'],
             'discount' => $totals['discount'],
@@ -286,7 +356,7 @@ class OrderService
             'gst_amount' => $totals['gst_amount'] ?? 0,
             'total' => $totals['total'],
             'payment_method' => $paymentMethod,
-            'is_recurring' => $paymentMethod === 'paypal',
+            'is_recurring' => $paymentMethod === 'paypal' && $durationDays === null,
             'status' => $status,
             'expires_at' => in_array($paymentMethod, ['upi', 'paypal'], true) ? now()->addMinutes($expiryMinutes) : null,
         ]), function (Order $order) use ($paymentMethod) {
@@ -440,9 +510,15 @@ class OrderService
         };
     }
 
-    public function availablePaymentMethods(string $currency, ?User $user = null, ?float $orderTotal = null): array
+    public function availablePaymentMethods(string $currency, ?User $user = null, ?float $orderTotal = null, bool $isTrial = false): array
     {
         $methods = config("pricing.payment_methods.{$currency}", []);
+
+        if ($isTrial) {
+            $methods = array_values(array_filter($methods, fn ($m) => ! in_array($m['id'], ['paypal'], true)));
+
+            return $methods;
+        }
 
         if ($currency === 'inr' && ! app(BuyahrefPaymentService::class)->isConfigured()) {
             $methods = array_values(array_filter($methods, fn ($m) => $m['id'] !== 'upi'));

@@ -23,19 +23,31 @@ class CheckoutRequest extends FormRequest
             $currency = 'usd';
         }
 
+        $isTrial = $this->isTrialCheckout();
+
         $methods = collect(app(OrderService::class)->availablePaymentMethods(
             $currency,
             $this->user(),
             $this->estimatedOrderTotal(),
+            $isTrial,
         ))->pluck('id')->all();
 
         return [
             'plan' => ['nullable', 'string', 'exists:plans,slug', 'required_without:tool'],
             'tool' => ['nullable', 'string', 'exists:tools,slug', 'required_without:plan'],
-            'duration_months' => ['required', 'integer', Rule::in(array_keys(config('pricing.durations')))],
+            'duration_months' => [
+                $isTrial ? 'nullable' : 'required',
+                'integer',
+                Rule::in(array_keys(config('pricing.durations'))),
+            ],
+            'duration_days' => [
+                $isTrial ? 'required' : 'nullable',
+                'integer',
+                Rule::in(array_keys(config('pricing.trial_durations', []))),
+            ],
             'currency' => ['required', 'string', Rule::in(['inr', 'usd'])],
             'payment_method' => ['required', 'string', Rule::in($methods)],
-            'coupon_code' => ['nullable', 'string', 'max:40'],
+            'coupon_code' => $isTrial ? ['prohibited'] : ['nullable', 'string', 'max:40'],
             'terms' => ['accepted'],
         ];
     }
@@ -47,12 +59,22 @@ class CheckoutRequest extends FormRequest
         }
     }
 
+    protected function isTrialCheckout(): bool
+    {
+        if (! $this->filled('plan')) {
+            return false;
+        }
+
+        $plan = Plan::where('slug', $this->plan)->where('is_active', true)->first();
+
+        return $plan?->isTrial() ?? false;
+    }
+
     protected function estimatedOrderTotal(): ?float
     {
         try {
             $orders = app(OrderService::class);
             $user = $this->user();
-            $durationMonths = (int) $this->input('duration_months', 1);
             $currency = $this->input('currency', 'inr');
             $couponCode = filled($this->coupon_code) ? strtoupper(trim($this->coupon_code)) : null;
 
@@ -62,6 +84,7 @@ class CheckoutRequest extends FormRequest
                     return null;
                 }
 
+                $durationMonths = (int) $this->input('duration_months', 1);
                 $totals = $orders->finalizeCheckoutTotals(
                     $orders->calculateToolTotals($tool, $durationMonths, $currency),
                     $user,
@@ -76,14 +99,23 @@ class CheckoutRequest extends FormRequest
                     return null;
                 }
 
-                $totals = $orders->finalizeCheckoutTotals(
-                    $orders->calculateTotals($plan, $durationMonths, $currency),
-                    $user,
-                    $currency,
-                    $durationMonths,
-                    $couponCode,
-                    planId: $plan->id,
-                );
+                if ($plan->isTrial()) {
+                    $durationDays = (int) $this->input('duration_days', 1);
+                    $totals = $orders->finalizeTrialTotals(
+                        $orders->calculateTrialTotals($durationDays, $currency),
+                        $currency,
+                    );
+                } else {
+                    $durationMonths = (int) $this->input('duration_months', 1);
+                    $totals = $orders->finalizeCheckoutTotals(
+                        $orders->calculateTotals($plan, $durationMonths, $currency),
+                        $user,
+                        $currency,
+                        $durationMonths,
+                        $couponCode,
+                        planId: $plan->id,
+                    );
+                }
             } else {
                 return null;
             }
@@ -98,6 +130,7 @@ class CheckoutRequest extends FormRequest
     {
         return [
             'terms.accepted' => 'You must accept the terms to continue.',
+            'coupon_code.prohibited' => 'Coupon codes cannot be used on trial plans.',
         ];
     }
 }

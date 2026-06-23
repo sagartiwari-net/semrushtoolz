@@ -156,4 +156,11 @@ return [
             ['id' => 'offline', 'name' => 'Offline', 'desc' => 'Binance / WhatsApp contact'],
         ],
     ],
+
+    /** Trial combo — fixed prices, no duration discounts, coupons, or wallet */
+    'trial_durations' => [
+        1 => ['days' => 1, 'label' => '1 Day', 'price_inr' => 100, 'price_usd' => 1.5],
+        3 => ['days' => 3, 'label' => '3 Days', 'price_inr' => 140, 'price_usd' => 2.5],
+        5 => ['days' => 5, 'label' => '5 Days', 'price_inr' => 180, 'price_usd' => 3.5],
+    ],
 ];

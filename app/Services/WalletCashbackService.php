@@ -14,6 +14,10 @@ class WalletCashbackService
 
     public function maybeAward(Order $order): ?WalletTransaction
     {
+        if ($order->duration_days) {
+            return null;
+        }
+
         if (! $this->wallet->qualifiesForCashback($order)) {
             return null;
         }

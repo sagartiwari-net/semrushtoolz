@@ -31,6 +31,7 @@ class StorePlanRequest extends FormRequest
             'is_active' => ['nullable', 'boolean'],
             'show_on_homepage' => ['nullable', 'boolean'],
             'is_bundle' => ['nullable', 'boolean'],
+            'is_trial' => ['nullable', 'boolean'],
         ];
     }
 }

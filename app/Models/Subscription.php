@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Subscription extends Model
 {
     protected $fillable = [
-        'user_id', 'plan_id', 'tool_id', 'status', 'duration_months',
+        'user_id', 'plan_id', 'tool_id', 'status', 'duration_months', 'duration_days',
         'currency', 'amount_paid', 'starts_at', 'ends_at', 'auto_renew',
         'paypal_subscription_id', 'next_billing_at',
     ];

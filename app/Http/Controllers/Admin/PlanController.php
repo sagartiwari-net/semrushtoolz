@@ -78,6 +78,7 @@ class PlanController extends Controller
         $data['is_active'] = $request->boolean('is_active');
         $data['show_on_homepage'] = $request->boolean('show_on_homepage');
         $data['is_bundle'] = $request->boolean('is_bundle');
+        $data['is_trial'] = $request->boolean('is_trial');
 
         if (! $plan->exists && ($data['sort_order'] ?? 0) === 0) {
             $data['sort_order'] = (int) Plan::min('sort_order') - 1;

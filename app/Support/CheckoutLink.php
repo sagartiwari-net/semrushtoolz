@@ -21,4 +21,13 @@ class CheckoutLink
             'currency' => $currency,
         ]);
     }
+
+    public static function forTrialPlan(string $planSlug, int $durationDays = 1, string $currency = 'inr'): string
+    {
+        return route('subscribe', [
+            'plan' => $planSlug,
+            'duration_days' => $durationDays,
+            'currency' => $currency,
+        ]);
+    }
 }
