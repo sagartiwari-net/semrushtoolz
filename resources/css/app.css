@@ -164,20 +164,50 @@
     }
 
     .plans-grid {
-        @apply grid gap-8 sm:grid-cols-2 xl:grid-cols-4;
+        @apply grid grid-cols-1 gap-8;
     }
 
-    /* Single bundle (combo) — full width on large screens so title does not crush */
+    @media (width >= 50rem) {
+        .plans-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (width >= 80rem) {
+        .plans-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    /* Single combo bundle — always one full-width card */
     .plans-grid-bundle {
-        @apply grid grid-cols-1 justify-items-stretch gap-8;
+        @apply grid grid-cols-1 gap-8;
     }
 
     .plans-grid-bundle .plan-card {
-        @apply mx-auto w-full max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl;
+        @apply w-full max-w-none;
     }
 
     .plans-grid-bundle .plan-card-featured .plan-card-heading {
-        @apply text-lg sm:text-xl lg:text-2xl;
+        @apply text-lg leading-tight sm:text-xl lg:text-2xl;
+    }
+
+    @media (width >= 40rem) and (width < 64rem) {
+        .plans-grid-bundle .plan-card-header {
+            @apply flex-col items-start gap-3;
+        }
+    }
+
+    @media (width >= 64rem) {
+        .plans-grid-bundle .plan-card {
+            @apply mx-auto max-w-4xl;
+        }
+    }
+
+    @media (width >= 96rem) {
+        .plans-grid-bundle .plan-card {
+            @apply max-w-5xl;
+        }
     }
 
     .plans-grid-3 {
@@ -185,7 +215,19 @@
     }
 
     .shop-tools-grid {
-        @apply grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5;
+        @apply grid grid-cols-1 gap-4;
+    }
+
+    @media (width >= 50rem) {
+        .shop-tools-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (width >= 80rem) {
+        .shop-tools-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
     }
 
     .shop-tool-card {
@@ -251,7 +293,7 @@
     }
 
     .plan-card {
-        @apply min-w-0 rounded-2xl border border-line bg-white p-7 shadow-sm transition-all duration-300 sm:p-8;
+        @apply min-w-0 rounded-2xl border border-line bg-white p-6 shadow-sm transition-all duration-300 lg:p-8;
     }
 
     .plan-card-default:hover {

@@ -39,8 +39,8 @@
         </span>
     @endif
 
-    {{-- Logo(s) --}}
-    <div class="flex items-center gap-4">
+    {{-- Logo(s) + title --}}
+    <div class="plan-card-header flex items-center gap-4">
         <div class="plan-logo-wrap flex shrink-0 items-center gap-2">
             @if (!empty($plan['logos']))
                 @foreach ($plan['logos'] as $logo)
