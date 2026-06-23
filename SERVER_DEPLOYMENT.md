@@ -2,8 +2,38 @@
 
 Use this checklist when hosting on production so nothing is missed.
 
+**Repository:** https://github.com/sagartiwari-net/semrushtoolz  
 **Last updated:** June 2026  
 **Source of truth for schedules:** `routes/console.php`
+
+---
+
+## 0. Clone & first-time setup (GitHub)
+
+On the server (PHP 8.3+, Composer, Node/npm):
+
+```bash
+cd /var/www   # or your web root
+git clone https://github.com/sagartiwari-net/semrushtoolz.git
+cd semrushtoolz
+cp deploy/production.env.template .env
+nano .env   # set APP_KEY, APP_URL, DB_PASSWORD, MAIL_PANEL_*
+bash deploy/setup-server.sh
+```
+
+### MySQL (cPanel / hosting)
+
+| Key | Value |
+|-----|--------|
+| `DB_CONNECTION` | `mysql` |
+| `DB_HOST` | `127.0.0.1` |
+| `DB_DATABASE` | `semrushtoolzbd` |
+| `DB_USERNAME` | `SemrushToolzBD` |
+| `DB_PASSWORD` | *(from hosting panel — never commit)* |
+
+Point the domain document root to **`public/`** (not project root).
+
+**Do not run** `php artisan db:seed` without `--class` on production (demo users would be created).
 
 ---
 
