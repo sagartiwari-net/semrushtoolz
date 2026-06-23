@@ -163,18 +163,23 @@
         @apply mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8;
     }
 
-    .plans-grid {
-        @apply grid grid-cols-1 gap-8;
+    .plans-grid,
+    .plans-grid-4 {
+        display: grid;
+        gap: 2rem;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
     }
 
     @media (width >= 50rem) {
-        .plans-grid {
+        .plans-grid,
+        .plans-grid-4 {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 
     @media (width >= 80rem) {
-        .plans-grid {
+        .plans-grid,
+        .plans-grid-4 {
             grid-template-columns: repeat(3, minmax(0, 1fr));
         }
     }
@@ -215,7 +220,9 @@
     }
 
     .shop-tools-grid {
-        @apply grid grid-cols-1 gap-4;
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
     }
 
     @media (width >= 50rem) {
@@ -609,5 +616,14 @@
     .whatsapp-float {
         right: 1.5rem;
         bottom: 1.5rem;
+    }
+}
+
+/* Unlayered — beats old xl:grid-cols-4 from cached builds */
+@media (width >= 80rem) {
+    .plans-grid,
+    .plans-grid-4,
+    .shop-tools-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
