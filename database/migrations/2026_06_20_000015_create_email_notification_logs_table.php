@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['user_id', 'preset_key', 'reference_type', 'reference_id'], 'email_notify_unique');
-            $table->index(['preset_key', 'reference_type', 'reference_id']);
+            $table->index(['preset_key', 'reference_type', 'reference_id'], 'email_notify_ref_idx');
         });
     }
 
