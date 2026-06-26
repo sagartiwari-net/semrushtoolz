@@ -88,7 +88,13 @@ class EmailSettingsController extends Controller
 
             return back()->with('success', 'Daily email cap updated to '.$data['daily_limit'].'.');
         } catch (\Throwable $exception) {
-            return back()->with('error', 'Could not update cap: '.$exception->getMessage());
+            $message = $exception->getMessage();
+
+            if (str_contains($message, 'settings') && str_contains(strtolower($message), 'not found')) {
+                $message .= ' Deploy the latest mail-panel on email.sagartiwari.net, or run: php artisan mail-panel:set-daily-cap 1000';
+            }
+
+            return back()->with('error', 'Could not update cap: '.$message);
         }
     }
 
