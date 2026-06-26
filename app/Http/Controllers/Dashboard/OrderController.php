@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\SiteSetting;
 use App\Services\BuyahrefPaymentService;
 use App\Services\DashboardPresenter;
 use App\Services\OrderInvoiceService;
@@ -143,6 +144,7 @@ class OrderController extends Controller
             'order' => $order,
             'formattedTotal' => $this->orders->formatAmount($order),
             'offline' => config('payments.offline'),
+            'whatsappDigits' => SiteSetting::whatsappDigits(),
             'activeNav' => 'dashboard.orders',
         ]));
     }

@@ -28,10 +28,11 @@
 
                 <div class="rounded-xl border border-line p-4 text-sm text-ink-secondary">
                     <p>{{ $offline['instructions'] }}</p>
-                    @if ($offline['whatsapp'])
+                    @if ($whatsappDigits)
                         <a
-                            href="https://wa.me/{{ $offline['whatsapp'] }}?text={{ urlencode("Hi, I paid for order {$order->order_number}. Amount: {$formattedTotal}") }}"
+                            href="https://wa.me/{{ $whatsappDigits }}?text={{ urlencode("Hi, I paid for order {$order->order_number}. Amount: {$formattedTotal}") }}"
                             target="_blank"
+                            rel="noopener"
                             class="ui-btn-primary mt-4 w-full justify-center"
                         >
                             Contact on WhatsApp

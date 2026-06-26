@@ -14,8 +14,8 @@ return [
     ],
 
     'offline' => [
-        'whatsapp' => env('OFFLINE_WHATSAPP', '919876543210'),
-        'telegram' => env('OFFLINE_TELEGRAM', null),
+        'whatsapp' => env('OFFLINE_WHATSAPP'),
+        'telegram' => env('OFFLINE_TELEGRAM'),
         'instructions' => 'Send payment via Binance, bank transfer, or WhatsApp. Include your order number in the payment note.',
     ],
 
