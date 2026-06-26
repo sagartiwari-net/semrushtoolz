@@ -19,3 +19,11 @@ Test purge (dry run):
 ```bash
 /www/server/php/84/bin/php artisan users:purge-unverified --dry-run
 ```
+
+Sync disposable email blocklist (also runs weekly Monday 4 AM):
+
+```bash
+/www/server/php/84/bin/php artisan email-policy:sync-disposable
+```
+
+See also: `deploy/REDIS.md`, `deploy/MONITORING.md`

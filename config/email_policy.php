@@ -90,13 +90,33 @@ return [
         'wronghead.com', 'wuzup.net', 'wuzupmail.net', 'xoxy.net',
         'yep.it', 'yogamaven.com', 'yopmail.com', 'yopmail.fr', 'yopmail.net',
         'yopmail.pp.ua', 'ypmail.webarnak.fr.eu.org', 'zippymail.info',
-        'zoemail.org', 'zomg.info', 'mail.tm', 'mail.gw',
+        'zoemail.org', 'zomg.info',         'mail.tm', 'mail.gw',
+    ],
+
+    /*
+    | High-risk TLDs commonly used by throwaway mail services.
+    | Legitimate users on these TLDs are rare for a SaaS signup.
+    */
+    'blocked_tlds' => [
+        '.tk', '.ml', '.ga', '.cf', '.gq', '.bond', '.icu', '.cam',
+    ],
+
+    /*
+    | Substrings in the domain that strongly suggest disposable mail.
+    */
+    'disposable_keywords' => [
+        'tempmail', 'tmpmail', 'trashmail', 'fakeinbox', 'throwaway',
+        'disposable', 'mailinator', 'guerrillamail', 'minuteinbox',
+        'temp-mail', 'tempemail', 'spambox', 'getnada', 'mohmal',
+        'emailfake', 'fakemail', 'burner', 'discard', 'maildrop',
     ],
 
     'blocked_patterns' => [
         '/@(temp|trash|disposable|throwaway|fake|spam|guerrilla|minute|minut)[a-z0-9\-]*\./i',
-        '/@(mailinator|yopmail|tempmail|getnada|sharklasers)\./i',
+        '/@(mailinator|yopmail|tempmail|getnada|sharklasers|maildrop|mailnesia)\./i',
+        '/@(tempmail|tmpmail|trashmail|fakeinbox|burnermail|discardmail)[a-z0-9\-]*\./i',
         '/^[a-z0-9._\-]{0,2}(\.[a-z0-9._\-]+){4,}@/i',
+        '/^[0-9]{6,}@/i',
     ],
 
 ];

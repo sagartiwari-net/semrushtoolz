@@ -9,6 +9,8 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Cache;
+
 class AdminUserQueryService
 {
     public function applyFilters(Builder $query, Request $request): Builder
@@ -101,40 +103,44 @@ class AdminUserQueryService
     /** @return array<int, array{active: int, expired: int, total: int}> */
     public function planSubscriberCounts(): array
     {
-        $plans = Plan::pluck('id');
-        $counts = [];
+        return Cache::remember('admin.plan_subscriber_counts', now()->addMinutes(5), function () {
+            $plans = Plan::pluck('id');
+            $counts = [];
 
-        foreach ($plans as $planId) {
-            $base = Subscription::where('plan_id', $planId);
-            $counts[$planId] = [
-                'active' => (clone $base)->where(function ($q) {
-                    $this->scopeActive($q);
-                })->distinct('user_id')->count('user_id'),
-                'expired' => (clone $base)->where(function ($q) {
-                    $this->scopeExpired($q);
-                })->distinct('user_id')->count('user_id'),
-                'total' => (clone $base)->distinct('user_id')->count('user_id'),
-            ];
-        }
+            foreach ($plans as $planId) {
+                $base = Subscription::where('plan_id', $planId);
+                $counts[$planId] = [
+                    'active' => (clone $base)->where(function ($q) {
+                        $this->scopeActive($q);
+                    })->distinct('user_id')->count('user_id'),
+                    'expired' => (clone $base)->where(function ($q) {
+                        $this->scopeExpired($q);
+                    })->distinct('user_id')->count('user_id'),
+                    'total' => (clone $base)->distinct('user_id')->count('user_id'),
+                ];
+            }
 
-        return $counts;
+            return $counts;
+        });
     }
 
     /** @return array<int, array{active: int, expired: int, total: int}> */
     public function toolSubscriberCounts(): array
     {
-        $tools = Tool::pluck('id');
-        $counts = [];
+        return Cache::remember('admin.tool_subscriber_counts', now()->addMinutes(5), function () {
+            $tools = Tool::pluck('id');
+            $counts = [];
 
-        foreach ($tools as $toolId) {
-            $counts[$toolId] = [
-                'active' => $this->countUsersForTool($toolId, 'active'),
-                'expired' => $this->countUsersForTool($toolId, 'expired'),
-                'total' => $this->countUsersForTool($toolId, 'all'),
-            ];
-        }
+            foreach ($tools as $toolId) {
+                $counts[$toolId] = [
+                    'active' => $this->countUsersForTool($toolId, 'active'),
+                    'expired' => $this->countUsersForTool($toolId, 'expired'),
+                    'total' => $this->countUsersForTool($toolId, 'all'),
+                ];
+            }
 
-        return $counts;
+            return $counts;
+        });
     }
 
     protected function countUsersForTool(int $toolId, string $mode): int
