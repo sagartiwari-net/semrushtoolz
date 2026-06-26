@@ -119,7 +119,11 @@ class OtpService
                 'message' => $exception->getMessage(),
             ]);
 
-            throw new OtpDeliveryException('Could not send login code. Please try again in a moment or use password login.');
+            $message = str_contains(strtolower($exception->getMessage()), 'daily send cap')
+                ? 'Daily email limit reached. Please sign in with your password or try again tomorrow.'
+                : 'Could not send login code. Please try again in a moment or use password login.';
+
+            throw new OtpDeliveryException($message);
         }
     }
 

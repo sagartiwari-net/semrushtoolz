@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PayPalWebhookEvent extends Model
 {
+    protected $table = 'paypal_webhook_events';
+
     protected $fillable = [
         'event_id',
         'event_type',

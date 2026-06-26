@@ -56,6 +56,8 @@ class User extends Authenticatable implements MustVerifyEmail
                     'user_id' => $this->id,
                     'message' => $exception->getMessage(),
                 ]);
+
+                return;
             }
         }
 
@@ -83,6 +85,8 @@ class User extends Authenticatable implements MustVerifyEmail
                     'user_id' => $this->id,
                     'message' => $exception->getMessage(),
                 ]);
+
+                return;
             }
         }
 

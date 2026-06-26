@@ -50,7 +50,7 @@ class BuyahrefPaymentService
                 'message' => 'Connected to Buyahref Payment Hub.',
             ];
         } catch (RuntimeException $e) {
-            return ['ok' => false, 'message' => $this->userFacingError($e)];
+            return ['ok' => false, 'message' => $e->getMessage()];
         }
     }
 
@@ -222,15 +222,24 @@ class BuyahrefPaymentService
         $signature = $this->sign($timestamp, strtoupper($method), $path, $body, $c['api_secret']);
 
         $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
             'X-Merchant-Key' => $c['api_key'],
             'X-Timestamp' => $timestamp,
             'X-Signature' => $signature,
+            'Accept' => 'application/json',
         ])
-            ->withBody($body, 'application/json')
             ->timeout(30)
-            ->connectTimeout(10)
-            ->send($method, $this->hubUrl().$path);
+            ->connectTimeout(10);
+
+        $url = $this->hubUrl().$path;
+
+        $response = match (strtoupper($method)) {
+            'GET' => $response->get($url),
+            'DELETE' => $response->delete($url),
+            default => $response
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->withBody($body, 'application/json')
+                ->post($url),
+        };
 
         $decoded = $response->json();
 
@@ -251,7 +260,19 @@ class BuyahrefPaymentService
         }
 
         if (! is_array($decoded)) {
-            throw new RuntimeException('Payment Hub returned an invalid response.');
+            $snippet = mb_substr(trim((string) $response->body()), 0, 200);
+
+            Log::warning('Buyahref API returned non-JSON body', [
+                'method' => $method,
+                'path' => $path,
+                'status' => $response->status(),
+                'body' => $snippet,
+            ]);
+
+            throw new RuntimeException(
+                'Payment Hub returned an invalid response'
+                .($snippet !== '' ? ': '.str_replace(["\n", "\r"], ' ', $snippet) : '.'),
+            );
         }
 
         if (array_key_exists('success', $decoded) && ! $decoded['success']) {
