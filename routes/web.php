@@ -222,6 +222,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('/payment-integration', [PaymentIntegrationController::class, 'edit'])->name('payment-integration.edit');
         Route::put('/payment-integration', [PaymentIntegrationController::class, 'update'])->name('payment-integration.update');
+        Route::post('/payment-integration/buyahref/test', [PaymentIntegrationController::class, 'testBuyahref'])->name('payment-integration.buyahref.test');
         Route::put('/payment-integration/paypal', [PaymentIntegrationController::class, 'updatePayPal'])->name('payment-integration.paypal');
         Route::post('/payment-integration/paypal/test', [PaymentIntegrationController::class, 'testPayPal'])->name('payment-integration.paypal.test');
 

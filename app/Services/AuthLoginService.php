@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\OtpDeliveryException;
 use App\Models\LoginOtp;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -52,7 +53,14 @@ class AuthLoginService
             Auth::logout();
             $request->session()->put('login_otp_user_id', $user->id);
             $request->session()->put('login_otp_remember', $request->boolean('remember'));
-            $this->otp->send($user, LoginOtp::PURPOSE_PERIODIC);
+
+            try {
+                $this->otp->send($user, LoginOtp::PURPOSE_PERIODIC);
+            } catch (OtpDeliveryException $exception) {
+                $this->clearPendingOtp($request);
+
+                return back()->withErrors(['email' => $exception->getMessage()]);
+            }
 
             return redirect()->route('login.otp.challenge')
                 ->with('success', 'We sent a verification code to your email.');

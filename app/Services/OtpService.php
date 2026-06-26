@@ -3,13 +3,13 @@
 namespace App\Services;
 
 use App\Exceptions\MailPanelException;
+use App\Exceptions\OtpDeliveryException;
 use App\Models\LoginOtp;
 use App\Models\User;
 use App\Services\MailPanel\MailPanelService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use RuntimeException;
 
 class OtpService
 {
@@ -52,7 +52,9 @@ class OtpService
 
         $this->deliverOtp($user, $plain, $purpose);
 
-        return Str::mask($user->email, '*', 3, strpos($user->email, '@') - 3);
+        $at = strpos($user->email, '@');
+
+        return Str::mask($user->email, '*', 3, max(1, $at !== false ? $at - 3 : 1));
     }
 
     public function verify(User $user, string $code, string $purpose): bool
@@ -102,7 +104,9 @@ class OtpService
     protected function deliverOtp(User $user, string $code, string $purpose): void
     {
         if (! $this->mailPanel->isEnabled()) {
-            throw new RuntimeException('Mail Panel is not configured. Set MAIL_PANEL_URL and MAIL_PANEL_API_KEY in .env');
+            throw new OtpDeliveryException(
+                'Email delivery is not configured yet. Please sign in with your password or contact support.',
+            );
         }
 
         try {
@@ -115,7 +119,7 @@ class OtpService
                 'message' => $exception->getMessage(),
             ]);
 
-            throw new RuntimeException('Could not send verification email. Please try again in a moment.');
+            throw new OtpDeliveryException('Could not send login code. Please try again in a moment or use password login.');
         }
     }
 

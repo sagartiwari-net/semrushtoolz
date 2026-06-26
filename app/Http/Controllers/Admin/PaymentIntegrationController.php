@@ -61,6 +61,13 @@ class PaymentIntegrationController extends Controller
         return back()->with('success', 'Payment integration settings saved.');
     }
 
+    public function testBuyahref(BuyahrefPaymentService $buyahref)
+    {
+        $result = $buyahref->testConnection();
+
+        return back()->with($result['ok'] ? 'success' : 'error', $result['message']);
+    }
+
     public function updatePayPal(Request $request)
     {
         $data = $request->validate([

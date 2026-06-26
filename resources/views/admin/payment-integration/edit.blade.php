@@ -96,7 +96,14 @@
                     <p class="mt-2 text-xs text-ink-muted">Admin → Merchants → your site → paste the Webhook URL.</p>
                 </div>
 
-                <button type="submit" class="ui-btn-primary">Save UPI Settings</button>
+                <div class="flex flex-wrap gap-3">
+                    <button type="submit" class="ui-btn-primary">Save UPI Settings</button>
+                </div>
+            </form>
+
+            <form method="POST" action="{{ route('admin.payment-integration.buyahref.test') }}">
+                @csrf
+                <button type="submit" class="ui-btn-outline text-sm">Test UPI Connection</button>
             </form>
         </div>
 

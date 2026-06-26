@@ -78,14 +78,17 @@ class OrderController extends Controller
 
         if ($this->buyahref->isConfigured()) {
             try {
-                if (! $order->hub_payment_url) {
-                    $this->buyahref->createPaymentForOrder($order);
-                    $order->refresh();
-                }
+                $order = $this->buyahref->ensurePaymentUrlForOrder($order);
 
                 if ($order->hub_payment_url && in_array($order->status, ['awaiting_payment', 'pending'], true)) {
                     return redirect()->away($order->hub_payment_url);
                 }
+            } catch (\RuntimeException $e) {
+                report($e);
+
+                return redirect()
+                    ->route('dashboard.orders.show', $order)
+                    ->with('error', $this->buyahref->userFacingError($e));
             } catch (\Throwable $e) {
                 report($e);
 

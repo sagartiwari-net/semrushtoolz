@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Exceptions\OtpDeliveryException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OtpSendRequest;
 use App\Models\LoginOtp;
@@ -73,7 +74,11 @@ class OtpAuthController extends Controller
             return back()->withErrors(['code' => 'Please wait a minute before requesting a new code.']);
         }
 
-        $this->otp->send($user, LoginOtp::PURPOSE_PERIODIC);
+        try {
+            $this->otp->send($user, LoginOtp::PURPOSE_PERIODIC);
+        } catch (OtpDeliveryException $exception) {
+            return back()->withErrors(['code' => $exception->getMessage()]);
+        }
 
         return back()->with('success', 'A new code has been sent to your email.');
     }
@@ -116,7 +121,14 @@ class OtpAuthController extends Controller
                 ->withErrors(['email' => 'Please wait a minute before requesting a new code.']);
         }
 
-        $this->otp->send($user, LoginOtp::PURPOSE_LOGIN);
+        try {
+            $this->otp->send($user, LoginOtp::PURPOSE_LOGIN);
+        } catch (OtpDeliveryException $exception) {
+            return redirect()->route('login')
+                ->withInput(['email' => $email])
+                ->with('login_mode', 'otp')
+                ->withErrors(['email' => $exception->getMessage()]);
+        }
 
         return redirect()->route('login')
             ->with('login_mode', 'otp-verify')
@@ -185,7 +197,14 @@ class OtpAuthController extends Controller
                 ->withErrors(['email' => 'Please wait a minute before requesting a new code.']);
         }
 
-        $this->otp->send($user, LoginOtp::PURPOSE_LOGIN);
+        try {
+            $this->otp->send($user, LoginOtp::PURPOSE_LOGIN);
+        } catch (OtpDeliveryException $exception) {
+            return redirect()->route('login')
+                ->with('login_mode', 'otp-verify')
+                ->with('otp_login_email', $user->email)
+                ->withErrors(['email' => $exception->getMessage()]);
+        }
 
         return redirect()->route('login')
             ->with('login_mode', 'otp-verify')
