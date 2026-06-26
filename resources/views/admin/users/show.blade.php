@@ -137,9 +137,9 @@
                                         <input class="ui-input w-20 text-sm" type="number" name="extend_months" min="1" max="12" value="1" placeholder="Mo">
                                         <button type="submit" class="ui-btn-outline text-xs">Extend months</button>
                                     </form>
-                                    <form method="POST" action="{{ route('admin.users.subscriptions.cancel', [$user, $sub]) }}" onsubmit="return confirm('Cancel this subscription?')">
+                                    <form method="POST" action="{{ route('admin.users.subscriptions.cancel', [$user, $sub]) }}" onsubmit="return confirm('Cancel this plan without refund? User will lose access immediately.')">
                                         @csrf
-                                        <button type="submit" class="ui-btn-ghost text-xs text-danger">Cancel</button>
+                                        <button type="submit" class="ui-btn-ghost text-xs text-danger">Cancel (no refund)</button>
                                     </form>
                                 </div>
                             </div>

@@ -26,12 +26,6 @@ class AdminUserQueryService
             $query->where('status', $request->status);
         }
 
-        match ($request->input('verified', 'all')) {
-            'yes' => $query->whereNotNull('email_verified_at'),
-            'no' => $query->whereNull('email_verified_at'),
-            default => null,
-        };
-
         $planId = $request->integer('plan_id') ?: null;
         $toolId = $request->integer('tool_id') ?: null;
         $subscription = $request->input('subscription', 'all');
@@ -183,6 +177,24 @@ class AdminUserQueryService
             'verified' => (bool) $user->email_verified_at,
             'joined' => $user->created_at->format('M d, Y'),
             'alerts' => $user->security_alert_count,
+        ];
+    }
+
+    public function presentUnverifiedUser(User $user): array
+    {
+        $cutoff = now()->subDays((int) config('security.purge_unverified_days', 7));
+        $eligibleForPurge = $user->created_at <= $cutoff
+            && ! $user->subscriptions->contains(fn ($s) => $s->status === 'active' && $s->ends_at?->isFuture())
+            && ! $user->orders->contains(fn ($o) => $o->status === 'completed');
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'joined' => $user->created_at->format('M d, Y'),
+            'days_old' => (int) $user->created_at->diffInDays(now()),
+            'eligible_for_purge' => $eligibleForPurge,
+            'status' => ucfirst($user->status),
         ];
     }
 }

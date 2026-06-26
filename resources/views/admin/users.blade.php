@@ -7,9 +7,9 @@
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm">
             <div>
                 <strong class="text-warning">{{ $unverifiedStats['total'] }} unverified account(s)</strong>
-                <span class="text-ink-secondary"> — likely bot/fake signups. {{ $unverifiedStats['eligible_for_purge'] }} eligible for auto-delete (older than {{ $unverifiedStats['purge_after_days'] }} days, no orders).</span>
+                <span class="text-ink-secondary"> — kept in a separate report (not listed below). {{ $unverifiedStats['eligible_for_purge'] }} eligible for auto-delete after {{ $unverifiedStats['purge_after_days'] }} days.</span>
             </div>
-            <a href="{{ route('admin.users', ['verified' => 'no']) }}" class="ui-btn-outline text-xs border-warning text-warning">View unverified only</a>
+            <a href="{{ route('admin.users.unverified') }}" class="ui-btn-outline text-xs border-warning text-warning">Open unverified report</a>
         </div>
     @endif
 
@@ -25,14 +25,6 @@
                     <option value="all" @selected(($filters['status'] ?? 'all') === 'all')>All</option>
                     <option value="active" @selected(($filters['status'] ?? '') === 'active')>Active</option>
                     <option value="blocked" @selected(($filters['status'] ?? '') === 'blocked')>Blocked</option>
-                </select>
-            </div>
-            <div>
-                <label class="ui-label text-xs">Email verified</label>
-                <select class="ui-input w-auto py-1.5 text-sm" name="verified">
-                    <option value="all" @selected(($filters['verified'] ?? 'all') === 'all')>All</option>
-                    <option value="yes" @selected(($filters['verified'] ?? '') === 'yes')>Verified only</option>
-                    <option value="no" @selected(($filters['verified'] ?? '') === 'no')>Not verified</option>
                 </select>
             </div>
             <div>
@@ -71,7 +63,7 @@
 
     <div class="dash-table-wrap">
         <table class="dash-table">
-            <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Sub</th><th>Status</th><th>Verified</th><th>Joined</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Sub</th><th>Status</th><th>Joined</th><th></th></tr></thead>
             <tbody>
                 @forelse ($users as $u)
                     <tr>
@@ -94,20 +86,13 @@
                                 'dash-badge-offline' => $u['status'] === 'Blocked',
                             ])>{{ $u['status'] }}</span>
                         </td>
-                        <td>
-                            @if ($u['verified'])
-                                <span class="text-xs text-success">Yes</span>
-                            @else
-                                <span class="text-xs text-warning">No</span>
-                            @endif
-                        </td>
                         <td>{{ $u['joined'] }}</td>
                         <td>
                             <a href="{{ route('admin.users.show', $u['id']) }}" class="ui-btn-ghost text-xs">Profile</a>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="8" class="py-8 text-center text-ink-muted">No users match these filters.</td></tr>
+                    <tr><td colspan="7" class="py-8 text-center text-ink-muted">No users match these filters.</td></tr>
                 @endforelse
             </tbody>
         </table>

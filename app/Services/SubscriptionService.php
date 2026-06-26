@@ -145,6 +145,39 @@ class SubscriptionService
         ]);
     }
 
+    public function findActiveForOrder(Order $order): ?Subscription
+    {
+        if (! $order->user_id || $order->isWalletTopup()) {
+            return null;
+        }
+
+        $query = Subscription::query()
+            ->where('user_id', $order->user_id)
+            ->where('status', 'active')
+            ->where('ends_at', '>', now());
+
+        if ($order->paypal_subscription_id) {
+            $query->where('paypal_subscription_id', $order->paypal_subscription_id);
+        } elseif ($order->plan_id) {
+            $query->where('plan_id', $order->plan_id);
+        } elseif ($order->tool_id) {
+            $query->where('tool_id', $order->tool_id);
+        } else {
+            return null;
+        }
+
+        return $query->orderByDesc('created_at')->first();
+    }
+
+    public function cancelWithoutRefund(Subscription $subscription): void
+    {
+        $subscription->update([
+            'status' => 'cancelled',
+            'ends_at' => now(),
+            'auto_renew' => false,
+        ]);
+    }
+
     public function renewFromPayPal(Subscription $subscription, float $amountPaid): Subscription
     {
         $base = $subscription->ends_at->isFuture() ? $subscription->ends_at : now();

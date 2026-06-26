@@ -34,7 +34,8 @@ class AdminController extends Controller
         $perPage = TablePageSize::resolve($request);
 
         $query = User::with(['subscriptions.plan', 'subscriptions.tool'])
-            ->whereIn('role', ['user', 'admin', 'super_admin']);
+            ->whereIn('role', ['user', 'admin', 'super_admin'])
+            ->whereNotNull('email_verified_at');
 
         $this->userQueries->applyFilters($query, $request);
 
@@ -55,10 +56,42 @@ class AdminController extends Controller
             'filters' => [
                 'q' => $request->q,
                 'status' => $request->status ?? 'all',
-                'verified' => $request->input('verified', 'all'),
                 'plan_id' => $request->plan_id,
                 'tool_id' => $request->tool_id,
                 'subscription' => $request->input('subscription', 'all'),
+            ],
+        ]);
+    }
+
+    public function unverifiedUsers(Request $request)
+    {
+        $perPage = TablePageSize::resolve($request);
+
+        $query = User::with(['subscriptions', 'orders'])
+            ->where('role', 'user')
+            ->whereNull('email_verified_at');
+
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->orderByDesc('created_at')
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn ($u) => $this->userQueries->presentUnverifiedUser($u));
+
+        $unverifiedStats = $this->userQueries->unverifiedStats();
+
+        return view('admin.users-unverified', [
+            'users' => $users,
+            'perPage' => $perPage,
+            'unverifiedStats' => $unverifiedStats,
+            'filters' => [
+                'q' => $request->q,
             ],
         ]);
     }

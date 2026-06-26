@@ -483,12 +483,47 @@ class OrderService
 
             $this->walletCashback->reverseForOrder($order);
 
+            $subscription = $this->subscriptions->findActiveForOrder($order);
+            if ($subscription) {
+                $this->subscriptions->cancelWithoutRefund($subscription);
+            }
+
             $order->update([
                 'status' => 'refunded',
                 'admin_note' => $reason,
             ]);
 
             $this->affiliates->reverseCommissionForOrder($order);
+
+            return $order->fresh();
+        });
+    }
+
+    public function revokeSubscriptionForOrder(Order $order, ?string $note = null): Order
+    {
+        if ($order->status !== 'completed') {
+            throw new \RuntimeException('Only completed orders can have access revoked.');
+        }
+
+        if ($order->isWalletTopup()) {
+            throw new \RuntimeException('Wallet top-up orders do not have a subscription.');
+        }
+
+        $subscription = $this->subscriptions->findActiveForOrder($order);
+
+        if (! $subscription) {
+            throw new \RuntimeException('No active subscription found for this order.');
+        }
+
+        return DB::transaction(function () use ($order, $subscription, $note) {
+            $this->subscriptions->cancelWithoutRefund($subscription);
+
+            if ($note) {
+                $existing = trim((string) $order->admin_note);
+                $order->update([
+                    'admin_note' => $existing !== '' ? $existing."\n".$note : $note,
+                ]);
+            }
 
             return $order->fresh();
         });

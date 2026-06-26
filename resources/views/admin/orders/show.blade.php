@@ -94,14 +94,29 @@
         @endif
     </div>
 
-    @if ($order->status === 'completed')
-        <div class="mt-6 max-w-md">
+    @if ($order->status === 'completed' && $order->isSubscription())
+        <div class="mt-6 grid max-w-2xl gap-4 sm:grid-cols-2">
+            @if ($linkedSubscription)
+                <form method="POST" action="{{ route('admin.orders.revoke-access', $order) }}" class="dash-card space-y-3 border-warning/30">
+                    @csrf
+                    <h3 class="font-bold text-warning">Cancel plan (no refund)</h3>
+                    <p class="text-sm text-ink-muted">Ends subscription access immediately. Order stays completed — no money is returned.</p>
+                    <textarea name="note" class="ui-input" rows="2" placeholder="Optional note"></textarea>
+                    <button type="submit" class="ui-btn-outline w-full border-warning text-warning hover:bg-warning/10" onclick="return confirm('Cancel plan without refund?')">Revoke access</button>
+                </form>
+            @else
+                <div class="dash-card border-line/50 text-sm text-ink-muted">
+                    <h3 class="font-bold text-ink">Subscription</h3>
+                    <p class="mt-2">No active subscription linked to this order (already ended or expired).</p>
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('admin.orders.refund', $order) }}" class="dash-card space-y-3 border-danger/30">
                 @csrf
-                <h3 class="font-bold text-danger">Refund Order</h3>
-                <p class="text-sm text-ink-muted">Marks order as refunded and reverses affiliate commission if one was created.</p>
+                <h3 class="font-bold text-danger">Refund order</h3>
+                <p class="text-sm text-ink-muted">Returns payment (wallet credit if applicable), ends subscription, and reverses affiliate commission.</p>
                 <textarea name="reason" class="ui-input" rows="2" placeholder="Refund reason" required></textarea>
-                <button type="submit" class="ui-btn-outline w-full border-danger text-danger hover:bg-danger/10" onclick="return confirm('Refund this order?')">Process Refund</button>
+                <button type="submit" class="ui-btn-outline w-full border-danger text-danger hover:bg-danger/10" onclick="return confirm('Refund this order?')">Process refund</button>
             </form>
         </div>
     @endif

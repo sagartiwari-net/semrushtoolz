@@ -143,6 +143,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('index');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::get('/users/unverified', [AdminController::class, 'unverifiedUsers'])->name('users.unverified');
         Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
         Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::post('/users/{user}/password', [AdminUserController::class, 'updatePassword'])->name('users.password');
@@ -227,6 +228,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/orders/{order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
         Route::post('/orders/{order}/approve', [AdminOrderController::class, 'approve'])->name('orders.approve');
         Route::post('/orders/{order}/refund', [AdminOrderController::class, 'refund'])->name('orders.refund');
+        Route::post('/orders/{order}/revoke-access', [AdminOrderController::class, 'revokeAccess'])->name('orders.revoke-access');
         Route::post('/orders/{order}/reject', [AdminOrderController::class, 'reject'])->name('orders.reject');
         Route::get('/payments', [AdminController::class, 'payments'])->name('payments');
         Route::get('/wallet', [AdminWalletController::class, 'index'])->name('wallet');

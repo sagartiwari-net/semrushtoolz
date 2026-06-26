@@ -4,6 +4,7 @@
     $nav = [
         ['label' => 'Dashboard', 'route' => 'admin.index', 'icon' => 'grid', 'active' => 'admin.index'],
         ['label' => 'Users', 'route' => 'admin.users', 'icon' => 'users', 'active' => 'admin.users'],
+        ['label' => 'Unverified Users', 'route' => 'admin.users.unverified', 'icon' => 'users', 'active' => 'admin.users.unverified'],
         ['label' => 'Plans', 'route' => 'admin.plans.index', 'icon' => 'package', 'active' => 'admin.plans.*'],
         ['label' => 'Tools', 'route' => 'admin.tools.index', 'icon' => 'server', 'active' => 'admin.tools.*'],
         ['label' => 'Tool Groups', 'route' => 'admin.tool-groups.index', 'icon' => 'grid', 'active' => 'admin.tool-groups.*'],

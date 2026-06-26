@@ -130,10 +130,6 @@ class AdminUserService
 
     public function cancelSubscription(\App\Models\Subscription $subscription): void
     {
-        $subscription->update([
-            'status' => 'cancelled',
-            'ends_at' => now(),
-            'auto_renew' => false,
-        ]);
+        $this->subscriptions->cancelWithoutRefund($subscription);
     }
 }
