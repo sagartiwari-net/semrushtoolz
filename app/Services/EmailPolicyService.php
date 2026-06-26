@@ -61,19 +61,24 @@ class EmailPolicyService
 
     public function refreshBlocklistCache(): void
     {
-        Cache::forget('email_policy.disposable_domains');
+        Cache::forget('email_policy.disposable_domain_lookup');
     }
 
     private function isDisposableDomain(string $domain): bool
     {
         $domain = strtolower($domain);
+        $blocked = $this->blockedDomainLookup();
 
-        if (in_array($domain, $this->blockedDomains(), true)) {
+        if (isset($blocked[$domain])) {
             return true;
         }
 
-        foreach ($this->blockedDomains() as $blocked) {
-            if (str_ends_with($domain, '.'.$blocked)) {
+        $parts = explode('.', $domain);
+
+        for ($i = 1, $count = count($parts); $i < $count; $i++) {
+            $suffix = implode('.', array_slice($parts, $i));
+
+            if (isset($blocked[$suffix])) {
                 return true;
             }
         }
@@ -112,10 +117,10 @@ class EmailPolicyService
         return false;
     }
 
-    /** @return array<int, string> */
-    private function blockedDomains(): array
+    /** @return array<string, true> */
+    private function blockedDomainLookup(): array
     {
-        return Cache::remember('email_policy.disposable_domains', now()->addDay(), function () {
+        return Cache::remember('email_policy.disposable_domain_lookup', now()->addDay(), function () {
             $domains = config('email_policy.disposable_domains', []);
 
             $path = 'blocklists/disposable_domains.txt';
@@ -132,10 +137,17 @@ class EmailPolicyService
                 }
             }
 
-            return array_values(array_unique(array_map(
-                static fn (string $domain) => strtolower(trim($domain)),
-                $domains,
-            )));
+            $lookup = [];
+
+            foreach ($domains as $domain) {
+                $domain = strtolower(trim((string) $domain));
+
+                if ($domain !== '') {
+                    $lookup[$domain] = true;
+                }
+            }
+
+            return $lookup;
         });
     }
 

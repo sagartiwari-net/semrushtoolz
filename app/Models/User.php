@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Exceptions\MailPanelException;
 use App\Notifications\CustomResetPassword;
 use App\Notifications\CustomVerifyEmail;
 use App\Services\MailPanel\MailPanelService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Storage;
 use Database\Factories\UserFactory;
@@ -45,9 +47,16 @@ class User extends Authenticatable implements MustVerifyEmail
         $mailPanel = app(MailPanelService::class);
 
         if ($mailPanel->isEnabled()) {
-            $mailPanel->sendEmailVerification($this);
+            try {
+                $mailPanel->sendEmailVerification($this);
 
-            return;
+                return;
+            } catch (MailPanelException $exception) {
+                Log::error('Mail Panel verification email failed', [
+                    'user_id' => $this->id,
+                    'message' => $exception->getMessage(),
+                ]);
+            }
         }
 
         $this->notify(new CustomVerifyEmail);
@@ -58,9 +67,16 @@ class User extends Authenticatable implements MustVerifyEmail
         $mailPanel = app(MailPanelService::class);
 
         if ($mailPanel->isEnabled()) {
-            $mailPanel->sendPasswordReset($this, $token);
+            try {
+                $mailPanel->sendPasswordReset($this, $token);
 
-            return;
+                return;
+            } catch (MailPanelException $exception) {
+                Log::error('Mail Panel password reset email failed', [
+                    'user_id' => $this->id,
+                    'message' => $exception->getMessage(),
+                ]);
+            }
         }
 
         $this->notify(new CustomResetPassword($token));
