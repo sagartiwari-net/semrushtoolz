@@ -7,14 +7,20 @@ use App\Http\Requests\Admin\StorePlanRequest;
 use App\Http\Requests\Admin\UpdatePlanRequest;
 use App\Models\Plan;
 use App\Models\Tool;
+use App\Services\AdminUserQueryService;
 
 class PlanController extends Controller
 {
+    public function __construct(
+        protected AdminUserQueryService $userQueries,
+    ) {}
+
     public function index()
     {
         $plans = Plan::with('tools')->orderBy('sort_order')->get();
+        $subscriberCounts = $this->userQueries->planSubscriberCounts();
 
-        return view('admin.plans.index', compact('plans'));
+        return view('admin.plans.index', compact('plans', 'subscriberCounts'));
     }
 
     public function create()

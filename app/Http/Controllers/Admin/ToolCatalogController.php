@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreToolRequest;
 use App\Http\Requests\Admin\UpdateToolRequest;
 use App\Models\Tool;
 use App\Models\ToolCredential;
+use App\Services\AdminUserQueryService;
 use App\Services\ToolSeoService;
 use App\Services\TransactionalEmailService;
 use Illuminate\Http\Request;
@@ -15,12 +16,14 @@ class ToolCatalogController extends Controller
 {
     public function __construct(
         protected TransactionalEmailService $transactionalMail,
+        protected AdminUserQueryService $userQueries,
     ) {}
     public function index()
     {
         $tools = Tool::with('accessGroup')->orderBy('sort_order')->get();
+        $subscriberCounts = $this->userQueries->toolSubscriberCounts();
 
-        return view('admin.tools.index', compact('tools'));
+        return view('admin.tools.index', compact('tools', 'subscriberCounts'));
     }
 
     public function create()

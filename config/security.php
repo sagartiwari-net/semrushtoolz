@@ -24,6 +24,8 @@ return [
     // Admins are never auto-blocked by this system.
     'allow_concurrent_sessions' => filter_var(env('SECURITY_ALLOW_CONCURRENT', false), FILTER_VALIDATE_BOOLEAN),
 
+    'purge_unverified_days' => (int) env('SECURITY_PURGE_UNVERIFIED_DAYS', 7),
+
     'exempt_admin_roles' => ['admin', 'super_admin'],
 
     'alert_types' => [

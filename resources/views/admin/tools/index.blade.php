@@ -4,15 +4,16 @@
 
 @section('content')
     <div class="mb-5 flex justify-between gap-3">
-        <p class="text-sm text-ink-secondary">Add tools here with price and access type. Then link them in Plans.</p>
+        <p class="text-sm text-ink-secondary">Add tools here with price and access type. Click subscriber counts to filter users.</p>
         <a href="{{ route('admin.tools.create') }}" class="ui-btn-primary">+ Add Tool</a>
     </div>
 
     <div class="dash-table-wrap">
         <table class="dash-table">
-            <thead><tr><th>Tool</th><th>Category</th><th>Price</th><th>Hub</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Tool</th><th>Category</th><th>Price</th><th>Hub</th><th>Subscribers</th><th>Status</th><th></th></tr></thead>
             <tbody>
                 @foreach ($tools as $tool)
+                    @php $counts = $subscriberCounts[$tool->id] ?? ['active' => 0, 'expired' => 0, 'total' => 0]; @endphp
                     <tr>
                         <td>
                             <div class="flex items-center gap-3">
@@ -31,6 +32,13 @@
                             @if ($tool->price_usd) / ${{ $tool->price_usd }} @endif
                         </td>
                         <td>{{ $tool->accessGroup?->slug ?? '—' }}</td>
+                        <td class="text-xs whitespace-nowrap">
+                            <a href="{{ route('admin.users', ['tool_id' => $tool->id, 'subscription' => 'active']) }}" class="text-success hover:underline">{{ $counts['active'] }} active</a>
+                            <span class="text-ink-muted"> · </span>
+                            <a href="{{ route('admin.users', ['tool_id' => $tool->id, 'subscription' => 'expired']) }}" class="text-warning hover:underline">{{ $counts['expired'] }} expired</a>
+                            <span class="text-ink-muted"> · </span>
+                            <a href="{{ route('admin.users', ['tool_id' => $tool->id]) }}" class="text-accent hover:underline">{{ $counts['total'] }} total</a>
+                        </td>
                         <td><span @class(['dash-badge-online' => $tool->is_active, 'dash-badge-offline' => !$tool->is_active])>{{ $tool->is_active ? 'On' : 'Off' }}</span></td>
                         <td>
                             <a href="{{ route('admin.tools.preview', $tool) }}" target="_blank" class="ui-btn-ghost text-xs">Preview</a>

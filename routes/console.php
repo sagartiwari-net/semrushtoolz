@@ -18,4 +18,5 @@ Schedule::command('affiliate:send-monthly-reports --batch=8')
 Schedule::command('email:process-broadcast-queue --batch=8')->everyFifteenMinutes();
 Schedule::command('affiliate:release-held-commissions')->daily();
 Schedule::command('tools:cleanup-sessions')->everyFiveMinutes();
+Schedule::command('users:purge-unverified')->dailyAt('03:00');
 Schedule::command('upi:verify')->everyThirtySeconds();

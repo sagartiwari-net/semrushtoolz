@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\AdminDashboardService;
+use App\Services\AdminUserQueryService;
 use App\Services\OrderExportService;
 use App\Services\OrderService;
 use App\Support\TablePageSize;
@@ -15,6 +16,7 @@ class AdminController extends Controller
 {
     public function __construct(
         protected AdminDashboardService $dashboard,
+        protected AdminUserQueryService $userQueries,
     ) {}
 
     public function index()
@@ -31,42 +33,32 @@ class AdminController extends Controller
     {
         $perPage = TablePageSize::resolve($request);
 
-        $query = User::with('subscriptions.plan')
+        $query = User::with(['subscriptions.plan', 'subscriptions.tool'])
             ->whereIn('role', ['user', 'admin', 'super_admin']);
 
-        if ($request->filled('q')) {
-            $search = $request->q;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('referral_code', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
+        $this->userQueries->applyFilters($query, $request);
 
         $users = $query->orderByDesc('created_at')
             ->paginate($perPage)
             ->withQueryString()
-            ->through(fn ($u) => [
-                'id' => $u->id,
-                'name' => $u->name,
-                'email' => $u->email,
-                'plan' => $u->subscriptions->first(fn ($s) => $s->status === 'active' && $s->ends_at?->isFuture())?->plan?->name ?? '—',
-                'status' => ucfirst($u->status),
-                'verified' => (bool) $u->email_verified_at,
-                'joined' => $u->created_at->format('M d, Y'),
-                'alerts' => $u->security_alert_count,
-            ]);
+            ->through(fn ($u) => $this->userQueries->presentUser($u));
+
+        $filterOptions = $this->userQueries->filterOptions();
+        $unverifiedStats = $this->userQueries->unverifiedStats();
 
         return view('admin.users', [
             'users' => $users,
             'perPage' => $perPage,
+            'plans' => $filterOptions['plans'],
+            'tools' => $filterOptions['tools'],
+            'unverifiedStats' => $unverifiedStats,
             'filters' => [
                 'q' => $request->q,
                 'status' => $request->status ?? 'all',
+                'verified' => $request->input('verified', 'all'),
+                'plan_id' => $request->plan_id,
+                'tool_id' => $request->tool_id,
+                'subscription' => $request->input('subscription', 'all'),
             ],
         ]);
     }

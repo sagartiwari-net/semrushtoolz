@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <p class="text-sm text-ink-secondary">Create plans and choose which tools each plan unlocks.</p>
+        <p class="text-sm text-ink-secondary">Create plans and choose which tools each plan unlocks. Click subscriber counts to filter users.</p>
         <a href="{{ route('admin.plans.create') }}" class="ui-btn-primary">+ Add Plan</a>
     </div>
 
@@ -18,12 +18,14 @@
                     <th>Tools</th>
                     <th>INR</th>
                     <th>USD</th>
+                    <th>Subscribers</th>
                     <th>Status</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($plans as $plan)
+                    @php $counts = $subscriberCounts[$plan->id] ?? ['active' => 0, 'expired' => 0, 'total' => 0]; @endphp
                     <tr>
                         <td class="font-medium text-ink">
                             {{ $plan->name }}
@@ -36,6 +38,13 @@
                         <td class="text-xs text-ink-muted">{{ $plan->tools->pluck('name')->join(', ') ?: '—' }}</td>
                         <td>₹{{ number_format($plan->price_inr) }}</td>
                         <td>${{ $plan->price_usd }}</td>
+                        <td class="text-xs whitespace-nowrap">
+                            <a href="{{ route('admin.users', ['plan_id' => $plan->id, 'subscription' => 'active']) }}" class="text-success hover:underline" title="Active subscribers">{{ $counts['active'] }} active</a>
+                            <span class="text-ink-muted"> · </span>
+                            <a href="{{ route('admin.users', ['plan_id' => $plan->id, 'subscription' => 'expired']) }}" class="text-warning hover:underline" title="Expired">{{ $counts['expired'] }} expired</a>
+                            <span class="text-ink-muted"> · </span>
+                            <a href="{{ route('admin.users', ['plan_id' => $plan->id]) }}" class="text-accent hover:underline" title="All time">{{ $counts['total'] }} total</a>
+                        </td>
                         <td>
                             <span @class(['dash-badge-online' => $plan->is_active, 'dash-badge-offline' => !$plan->is_active])>
                                 {{ $plan->is_active ? 'Active' : 'Inactive' }}
