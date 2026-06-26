@@ -11,16 +11,16 @@ class AuthLoginService
 {
     public function __construct(
         protected OtpService $otp,
+        protected SecurityMonitorService $security,
+        protected UserSessionService $sessions,
     ) {}
 
-    public function completeLogin(User $user, Request $request, bool $remember = false): void
+    public function completeLogin(User $user, Request $request, bool $remember = false): ?\Illuminate\Http\RedirectResponse
     {
         Auth::login($user, $remember);
         $request->session()->regenerate();
 
-        $security = app(SecurityMonitorService::class);
-        $security->bindDeviceToSession($request);
-        $security->logActivity($user, $request, 'login');
+        return $this->finalizeAuthenticatedSession($user, $request);
     }
 
     public function redirectAfterLogin(User $user)
@@ -60,9 +60,9 @@ class AuthLoginService
 
         $request->session()->regenerate();
 
-        $security = app(SecurityMonitorService::class);
-        $security->bindDeviceToSession($request);
-        $security->logActivity($user, $request, 'login');
+        if ($error = $this->finalizeAuthenticatedSession($user, $request)) {
+            return $error;
+        }
 
         return $this->redirectAfterLogin($user);
     }
@@ -77,5 +77,23 @@ class AuthLoginService
     public function clearPendingOtp(Request $request): void
     {
         $request->session()->forget(['login_otp_user_id', 'login_otp_remember']);
+    }
+
+    protected function finalizeAuthenticatedSession(User $user, Request $request): ?\Illuminate\Http\RedirectResponse
+    {
+        if ($message = $this->sessions->concurrentLoginMessage($user, $request)) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors(['email' => $message]);
+        }
+
+        $this->sessions->purgeOtherSessions($user->id, $request->session()->getId());
+        $this->security->bindDeviceToSession($request);
+        $this->sessions->syncSessionMeta($request, $user);
+        $this->security->logActivity($user, $request, 'login');
+
+        return null;
     }
 }

@@ -52,7 +52,10 @@ class OtpAuthController extends Controller
 
         $remember = $request->session()->pull('login_otp_remember', false);
         $this->authLogin->clearPendingOtp($request);
-        $this->authLogin->completeLogin($user, $request, $remember);
+
+        if ($error = $this->authLogin->completeLogin($user, $request, $remember)) {
+            return $error;
+        }
 
         return $this->authLogin->redirectAfterLogin($user)
             ->with('success', 'Verified successfully. Welcome back!');
@@ -152,7 +155,12 @@ class OtpAuthController extends Controller
                 ->withErrors(['code' => 'Invalid or expired code. Please try again.']);
         }
 
-        $this->authLogin->completeLogin($user, $request, $request->boolean('remember'));
+        if ($error = $this->authLogin->completeLogin($user, $request, $request->boolean('remember'))) {
+            $request->session()->forget(['otp_login_email', 'login_mode']);
+
+            return $error;
+        }
+
         $request->session()->forget(['otp_login_email', 'login_mode']);
 
         return $this->authLogin->redirectAfterLogin($user)

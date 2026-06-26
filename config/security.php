@@ -22,6 +22,8 @@ return [
     'activity_log_interval_minutes' => (int) env('SECURITY_ACTIVITY_LOG_INTERVAL', 5),
 
     // Admins are never auto-blocked by this system.
+    'allow_concurrent_sessions' => filter_var(env('SECURITY_ALLOW_CONCURRENT', false), FILTER_VALIDATE_BOOLEAN),
+
     'exempt_admin_roles' => ['admin', 'super_admin'],
 
     'alert_types' => [

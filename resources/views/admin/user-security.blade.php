@@ -34,6 +34,14 @@
             </div>
 
             <div class="mt-6 flex flex-col gap-2">
+                @if ($sessions->isNotEmpty())
+                    <form method="POST" action="{{ route('admin.security.kill-sessions', $user) }}" onsubmit="return confirm('End all active sessions for this user? They can sign in again immediately.')">
+                        @csrf
+                        <button type="submit" class="ui-btn-outline w-full border-warning text-warning hover:bg-warning/10">
+                            Kill All Sessions ({{ $sessions->count() }})
+                        </button>
+                    </form>
+                @endif
                 @if ($user->status === 'blocked')
                     <form method="POST" action="{{ route('admin.security.unblock', $user) }}">
                         @csrf
@@ -100,6 +108,43 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <div class="dash-card mt-6">
+        <h3 class="dash-card-title">Active Login Sessions</h3>
+        <p class="mb-4 text-sm text-ink-muted">Use this when a user is stuck on “already logged in” or you need to force logout everywhere.</p>
+        <div class="dash-table-wrap">
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th>Last active</th>
+                        <th>IP</th>
+                        <th>Device fingerprint</th>
+                        <th>Browser</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($sessions as $session)
+                        <tr>
+                            <td>{{ $session['last_activity'] }}</td>
+                            <td class="font-mono text-xs">{{ $session['ip'] }}</td>
+                            <td class="font-mono text-xs">{{ $session['fingerprint'] }}</td>
+                            <td class="max-w-xs truncate text-xs" title="{{ $session['user_agent'] }}">{{ Str::limit($session['user_agent'], 48) }}</td>
+                            <td>
+                                <form method="POST" action="{{ route('admin.security.sessions.destroy', $session['id']) }}" onsubmit="return confirm('End this session?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="ui-btn-ghost text-xs text-danger">Kill</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" class="py-6 text-center text-ink-muted">No active sessions.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 @endsection

@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\SecurityAlert;
 use App\Models\User;
 use App\Services\SecurityMonitorService;
+use App\Services\UserSessionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SecurityController extends Controller
 {
     public function __construct(
-        protected SecurityMonitorService $security
+        protected SecurityMonitorService $security,
+        protected UserSessionService $sessions,
     ) {}
 
     public function index()
@@ -37,8 +40,11 @@ class SecurityController extends Controller
     {
         $summary = $this->security->getUserIpSummary($user->id);
         $alerts = $user->securityAlerts()->orderByDesc('created_at')->get();
+        $sessions = $this->sessions
+            ->activeSessions($user->id)
+            ->map(fn ($session) => $this->sessions->formatSessionRow($session));
 
-        return view('admin.user-security', compact('user', 'summary', 'alerts'));
+        return view('admin.user-security', compact('user', 'summary', 'alerts', 'sessions'));
     }
 
     public function blockUser(Request $request, User $user)
@@ -75,5 +81,23 @@ class SecurityController extends Controller
         ]);
 
         return back()->with('success', 'Alert marked as resolved.');
+    }
+
+    public function killAllSessions(User $user)
+    {
+        $count = $this->sessions->killAllSessions($user->id);
+
+        return back()->with('success', "Ended {$count} active session(s) for {$user->name}. They can sign in again now.");
+    }
+
+    public function killSession(Request $request, string $sessionId)
+    {
+        $session = DB::table('sessions')->where('id', $sessionId)->first();
+
+        abort_unless($session, 404);
+
+        $this->sessions->killSession($sessionId);
+
+        return back()->with('success', 'Session ended.');
     }
 }

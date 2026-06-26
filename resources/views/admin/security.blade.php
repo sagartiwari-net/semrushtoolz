@@ -105,11 +105,11 @@
         <h3 class="dash-card-title">How Account Sharing Detection Works</h3>
         <ul class="grid gap-2 text-sm text-ink-secondary sm:grid-cols-2">
             <li>✓ Every dashboard visit logs IP, device, browser &amp; platform</li>
-            <li>✓ {{ config('security.max_ips_per_hour') }}+ different IPs in 1 hour → High alert</li>
-            <li>✓ {{ config('security.max_ips_per_day') }}+ different IPs in 24 hours → Critical alert</li>
-            <li>✓ Admin gets instant alert with all IP addresses</li>
-            <li>✓ One-click block kills all sessions immediately</li>
-            <li>✓ Blocked users cannot access dashboard or tools</li>
+            <li>✓ {{ config('security.max_ips_warning_hour') }}+ IPs + {{ config('security.min_devices_for_warning') }}+ devices in 1 hour → User warning</li>
+            <li>✓ {{ config('security.max_ips_block_hour') }}+ IPs + {{ config('security.min_devices_for_block') }}+ devices in 1 hour → Auto-block</li>
+            <li>✓ Same device, changing network/IP → ignored (no false block)</li>
+            <li>✓ Device fingerprint blocks stolen cookies on other browsers</li>
+            <li>✓ Admin can kill active sessions from User Security page</li>
         </ul>
     </div>
 @endsection

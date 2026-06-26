@@ -260,6 +260,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/security/users/{user}', [SecurityController::class, 'showUser'])->name('security.user');
         Route::post('/security/users/{user}/block', [SecurityController::class, 'blockUser'])->name('security.block');
         Route::post('/security/users/{user}/unblock', [SecurityController::class, 'unblockUser'])->name('security.unblock');
+        Route::post('/security/users/{user}/kill-sessions', [SecurityController::class, 'killAllSessions'])->name('security.kill-sessions');
+        Route::delete('/security/sessions/{sessionId}', [SecurityController::class, 'killSession'])->name('security.sessions.destroy');
         Route::post('/security/alerts/{alert}/resolve', [SecurityController::class, 'resolveAlert'])->name('security.resolve');
     });
 });

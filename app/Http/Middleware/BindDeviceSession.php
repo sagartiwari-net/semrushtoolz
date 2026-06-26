@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\SecurityMonitorService;
+use App\Services\UserSessionService;
 use App\Support\DeviceFingerprint;
 use Closure;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ class BindDeviceSession
 {
     public function __construct(
         protected SecurityMonitorService $security,
+        protected UserSessionService $sessions,
     ) {}
 
     public function handle(Request $request, Closure $next): Response
@@ -23,14 +25,20 @@ class BindDeviceSession
             return $next($request);
         }
 
+        $clientFp = DeviceFingerprint::clientFromRequest($request);
+
         if (! $request->session()->has(DeviceFingerprint::SESSION_KEY)) {
-            $this->security->bindDeviceToSession($request);
+            if ($clientFp) {
+                $this->security->bindDeviceToSession($request);
+            }
+
+            $this->sessions->syncSessionMeta($request, $user);
 
             return $next($request);
         }
 
-        if (! $this->security->sessionDeviceMatches($request)) {
-            $this->security->logActivity($user, $request, 'device_mismatch');
+        if ($clientFp && ! $this->security->sessionDeviceMatches($request)) {
+            $this->security->recordDeviceMismatch($user, $request);
 
             Auth::logout();
             $request->session()->invalidate();
@@ -41,6 +49,10 @@ class BindDeviceSession
                 ->withErrors([
                     'email' => 'This session was opened on another device or browser. Please sign in again.',
                 ]);
+        }
+
+        if ($clientFp) {
+            $this->sessions->syncSessionMeta($request, $user);
         }
 
         return $next($request);

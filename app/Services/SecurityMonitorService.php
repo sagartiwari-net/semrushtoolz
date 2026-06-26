@@ -51,7 +51,7 @@ class SecurityMonitorService
 
     public function bindDeviceToSession(Request $request): void
     {
-        $fingerprint = DeviceFingerprint::fromRequest($request);
+        $fingerprint = DeviceFingerprint::clientFromRequest($request);
 
         if (! $fingerprint) {
             return;
@@ -68,13 +68,31 @@ class SecurityMonitorService
             return true;
         }
 
-        $current = DeviceFingerprint::fromRequest($request);
+        $current = DeviceFingerprint::clientFromRequest($request);
 
         if (! $current) {
             return true;
         }
 
         return hash_equals($expected, $current);
+    }
+
+    public function recordDeviceMismatch(User $user, Request $request): void
+    {
+        $this->logActivity($user, $request, 'device_mismatch');
+
+        $this->createAlertIfNeeded(
+            $user,
+            'device_mismatch',
+            'high',
+            [
+                'ips' => [ClientIp::from($request)],
+                'session_fp' => substr((string) $request->session()->get(DeviceFingerprint::SESSION_KEY), 0, 12),
+                'request_fp' => substr((string) DeviceFingerprint::clientFromRequest($request), 0, 12),
+                'window' => 'session check',
+            ],
+            config('security.alert_cooldown_minutes', 60),
+        );
     }
 
     public function analyzeUser(User $user, ?Request $request = null): void
