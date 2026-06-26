@@ -22,6 +22,21 @@ class MailPanelService
         return MailPanelSettings::isConfigured();
     }
 
+    public function testConnection(): array
+    {
+        if (! $this->isEnabled()) {
+            return ['ok' => false, 'message' => 'Mail Panel is not enabled or API key is missing.'];
+        }
+
+        try {
+            $this->client->todayStats();
+
+            return ['ok' => true, 'message' => 'Connected to Mail Panel.'];
+        } catch (MailPanelException $exception) {
+            return ['ok' => false, 'message' => $exception->getMessage()];
+        }
+    }
+
     public function sendByPreset(string $presetKey, string $to, array $data = [], ?string $subjectOverride = null): array
     {
         $this->ensureConfigured();

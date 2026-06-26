@@ -11,6 +11,7 @@ use App\Services\ReferralService;
 use App\Services\ReferralSignupBonusService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -64,7 +65,15 @@ class AuthController extends Controller
             $this->referrals->clearCookie();
         }
 
-        $user->sendEmailVerificationNotification();
+        try {
+            $user->sendEmailVerificationNotification();
+        } catch (\Throwable $exception) {
+            Log::error('Register verification email failed', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'message' => $exception->getMessage(),
+            ]);
+        }
 
         return redirect()->route('verification.notice')
             ->with('email', $user->email)

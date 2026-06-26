@@ -120,35 +120,39 @@ class EmailPolicyService
     /** @return array<string, true> */
     private function blockedDomainLookup(): array
     {
-        return Cache::remember('email_policy.disposable_domain_lookup', now()->addDay(), function () {
-            $domains = config('email_policy.disposable_domains', []);
+        try {
+            return Cache::remember('email_policy.disposable_domain_lookup', now()->addDay(), function () {
+                $domains = config('email_policy.disposable_domains', []);
 
-            $path = 'blocklists/disposable_domains.txt';
+                $path = 'blocklists/disposable_domains.txt';
 
-            if (Storage::disk('local')->exists($path)) {
-                $lines = preg_split('/\R+/', Storage::disk('local')->get($path) ?: '') ?: [];
+                if (Storage::disk('local')->exists($path)) {
+                    $lines = preg_split('/\R+/', Storage::disk('local')->get($path) ?: '') ?: [];
 
-                foreach ($lines as $line) {
-                    $domain = strtolower(trim($line));
+                    foreach ($lines as $line) {
+                        $domain = strtolower(trim($line));
 
-                    if ($domain !== '' && ! str_starts_with($domain, '#')) {
-                        $domains[] = $domain;
+                        if ($domain !== '' && ! str_starts_with($domain, '#')) {
+                            $domains[] = $domain;
+                        }
                     }
                 }
-            }
 
-            $lookup = [];
+                $lookup = [];
 
-            foreach ($domains as $domain) {
-                $domain = strtolower(trim((string) $domain));
+                foreach ($domains as $domain) {
+                    $domain = strtolower(trim((string) $domain));
 
-                if ($domain !== '') {
-                    $lookup[$domain] = true;
+                    if ($domain !== '') {
+                        $lookup[$domain] = true;
+                    }
                 }
-            }
 
-            return $lookup;
-        });
+                return $lookup;
+            });
+        } catch (\Throwable) {
+            return [];
+        }
     }
 
     /** @return array{allowed: false, message: string} */

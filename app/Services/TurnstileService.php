@@ -27,12 +27,18 @@ class TurnstileService
             return false;
         }
 
-        $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-            'secret' => config('captcha.turnstile_secret_key'),
-            'response' => $token,
-            'remoteip' => $ip,
-        ]);
+        try {
+            $response = Http::asForm()
+                ->timeout(10)
+                ->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                    'secret' => config('captcha.turnstile_secret_key'),
+                    'response' => $token,
+                    'remoteip' => $ip,
+                ]);
 
-        return $response->successful() && $response->json('success') === true;
+            return $response->successful() && $response->json('success') === true;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }

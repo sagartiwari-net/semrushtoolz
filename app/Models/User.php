@@ -59,7 +59,14 @@ class User extends Authenticatable implements MustVerifyEmail
             }
         }
 
-        $this->notify(new CustomVerifyEmail);
+        try {
+            $this->notify(new CustomVerifyEmail);
+        } catch (\Throwable $exception) {
+            Log::error('Verification email fallback failed', [
+                'user_id' => $this->id,
+                'message' => $exception->getMessage(),
+            ]);
+        }
     }
 
     public function sendPasswordResetNotification($token): void
@@ -79,7 +86,14 @@ class User extends Authenticatable implements MustVerifyEmail
             }
         }
 
-        $this->notify(new CustomResetPassword($token));
+        try {
+            $this->notify(new CustomResetPassword($token));
+        } catch (\Throwable $exception) {
+            Log::error('Password reset email fallback failed', [
+                'user_id' => $this->id,
+                'message' => $exception->getMessage(),
+            ]);
+        }
     }
 
     public function isBlocked(): bool
