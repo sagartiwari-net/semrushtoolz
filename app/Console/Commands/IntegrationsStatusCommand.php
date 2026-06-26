@@ -44,6 +44,9 @@ class IntegrationsStatusCommand extends Command
         $this->line('── UPI / Buyahref Payment Hub ──');
         $this->line('Enabled:  '.($buyahrefConfig['enabled'] ? 'yes' : 'no'));
         $this->line('Hub URL:  '.($buyahrefConfig['hub_url'] ?: '—'));
+        if (filled($buyahrefConfig['hub_internal_url'] ?? null)) {
+            $this->line('Internal: '.($buyahrefConfig['hub_internal_url']).' (API calls use this)');
+        }
         $this->line('API key:  '.($buyahrefConfig['api_key'] ? substr($buyahrefConfig['api_key'], 0, 8).'...' : 'MISSING'));
         $this->line('Secret:   '.(SiteSetting::hasBuyahrefSecret() ? 'saved' : 'MISSING'));
         $this->line('Webhook:  '.url('/webhooks/buyahref'));

@@ -55,6 +55,29 @@
 
     <div class="grid gap-6 lg:grid-cols-2">
         <div class="dash-card space-y-4">
+            <h2 class="text-base font-semibold text-ink">Daily send cap</h2>
+            <p class="text-sm text-ink-secondary">
+                Mail Panel par is API key ke liye kitni emails roz bhej sakte ho.
+                @if ($mailReady && ! empty($emailStats))
+                    Abhi: <strong>{{ $emailStats['sent_today'] ?? 0 }}</strong> bheji /
+                    cap <strong>{{ $emailStats['daily_limit'] ?? $emailStats['daily_cap'] ?? '?' }}</strong>
+                    ({{ $emailStats['remaining'] ?? '?' }} bachi).
+                @endif
+            </p>
+
+            <form method="POST" action="{{ route('admin.email-settings.daily-limit') }}" class="flex flex-wrap items-end gap-3">
+                @csrf
+                @method('PUT')
+                <div class="min-w-[10rem] flex-1">
+                    <label class="ui-label">Daily cap (max 10,000)</label>
+                    <input class="ui-input" type="number" name="daily_limit" min="1" max="10000"
+                        value="{{ old('daily_limit', $emailStats['daily_limit'] ?? $emailStats['daily_cap'] ?? 1000) }}" required>
+                </div>
+                <button type="submit" class="ui-btn ui-btn-primary shrink-0" @disabled(! $mailReady)>Update Cap</button>
+            </form>
+        </div>
+
+        <div class="dash-card space-y-4">
             <h2 class="text-base font-semibold text-ink">Test & Sync</h2>
             <p class="text-sm text-ink-secondary">Connection check karo aur saare enabled presets Mail Panel par push karo.</p>
 

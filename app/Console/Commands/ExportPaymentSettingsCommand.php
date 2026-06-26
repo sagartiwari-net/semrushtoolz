@@ -17,6 +17,7 @@ class ExportPaymentSettingsCommand extends Command
         'buyahref_display_name',
         'buyahref_display_description',
         'buyahref_hub_url',
+        'buyahref_hub_internal_url',
         'buyahref_api_key',
         'buyahref_api_secret',
         'buyahref_order_expiry_minutes',

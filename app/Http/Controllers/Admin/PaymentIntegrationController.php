@@ -35,6 +35,7 @@ class PaymentIntegrationController extends Controller
             'display_name' => ['required', 'string', 'max:80'],
             'display_description' => ['nullable', 'string', 'max:255'],
             'hub_url' => ['required', 'url', 'max:500'],
+            'hub_internal_url' => ['nullable', 'url', 'max:500'],
             'api_key' => ['required', 'string', 'max:120'],
             'api_secret' => [
                 Rule::requiredIf(fn () => $request->boolean('enabled') && ! SiteSetting::hasBuyahrefSecret()),
@@ -51,6 +52,7 @@ class PaymentIntegrationController extends Controller
         SiteSetting::set('buyahref_display_name', trim($data['display_name']));
         SiteSetting::set('buyahref_display_description', trim($data['display_description'] ?? ''));
         SiteSetting::set('buyahref_hub_url', rtrim($data['hub_url'], '/'));
+        SiteSetting::set('buyahref_hub_internal_url', rtrim((string) ($data['hub_internal_url'] ?? ''), '/'));
         SiteSetting::set('buyahref_api_key', trim($data['api_key']));
         SiteSetting::set('buyahref_order_expiry_minutes', (string) $data['order_expiry_minutes']);
 

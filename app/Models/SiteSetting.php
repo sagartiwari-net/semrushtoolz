@@ -47,6 +47,7 @@ class SiteSetting extends Model
             'display_name' => static::get('buyahref_display_name', 'UPI') ?: 'UPI',
             'display_description' => static::get('buyahref_display_description', 'Secure QR payment — auto-verified (5 min window)'),
             'hub_url' => static::get('buyahref_hub_url', 'https://buyahref.com/payment') ?: 'https://buyahref.com/payment',
+            'hub_internal_url' => static::get('buyahref_hub_internal_url', '') ?: '',
             'api_key' => static::get('buyahref_api_key', ''),
             'api_secret' => static::get('buyahref_api_secret', ''),
             'order_expiry_minutes' => max(1, min(60, (int) static::get('buyahref_order_expiry_minutes', '5'))),

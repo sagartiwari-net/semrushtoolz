@@ -37,6 +37,29 @@ class MailPanelService
         }
     }
 
+    public function emailStats(): array
+    {
+        if (! $this->isEnabled()) {
+            return [];
+        }
+
+        try {
+            return $this->client->getSettings();
+        } catch (MailPanelException) {
+            try {
+                return $this->client->todayStats();
+            } catch (MailPanelException) {
+                return [];
+            }
+        }
+    }
+
+    public function updateDailyLimit(int $dailyLimit): void
+    {
+        $this->ensureConfigured();
+        $this->client->updateDailyLimit($dailyLimit);
+    }
+
     public function sendByPreset(string $presetKey, string $to, array $data = [], ?string $subjectOverride = null): array
     {
         $this->ensureConfigured();

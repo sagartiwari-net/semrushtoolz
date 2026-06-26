@@ -13,15 +13,17 @@ use Illuminate\Validation\Rule;
 
 class EmailSettingsController extends Controller
 {
-    public function edit(MailPanelTemplateSyncService $syncService)
+    public function edit(MailPanelTemplateSyncService $syncService, MailPanelService $mailPanel)
     {
         $config = SiteSetting::mailPanelConfig();
+        $emailStats = $mailPanel->emailStats();
 
         return view('admin.email-settings.edit', [
             'config' => $config,
             'hasApiKey' => SiteSetting::hasMailPanelApiKey(),
             'mailReady' => MailPanelSettings::isConfigured(),
             'remoteTemplates' => $syncService->remoteTemplates(),
+            'emailStats' => $emailStats,
         ]);
     }
 
@@ -57,11 +59,36 @@ class EmailSettingsController extends Controller
         }
 
         try {
-            $stats = $client->todayStats();
+            $stats = $client->getSettings();
 
-            return back()->with('success', 'Connection OK — sent today: '.($stats['sent_today'] ?? 0).' / daily cap: '.($stats['daily_cap'] ?? '?'));
+            return back()->with('success', 'Connection OK — sent today: '.($stats['sent_today'] ?? 0).' / daily cap: '.($stats['daily_limit'] ?? $stats['daily_cap'] ?? '?'));
         } catch (\Throwable $exception) {
-            return back()->with('error', 'Connection failed: '.$exception->getMessage());
+            try {
+                $stats = $client->todayStats();
+
+                return back()->with('success', 'Connection OK — sent today: '.($stats['sent_today'] ?? 0).' / daily cap: '.($stats['daily_cap'] ?? '?'));
+            } catch (\Throwable) {
+                return back()->with('error', 'Connection failed: '.$exception->getMessage());
+            }
+        }
+    }
+
+    public function updateDailyLimit(Request $request, MailPanelService $mailPanel)
+    {
+        $data = $request->validate([
+            'daily_limit' => ['required', 'integer', 'min:1', 'max:10000'],
+        ]);
+
+        if (! $mailPanel->isEnabled()) {
+            return back()->with('error', 'Mail Panel enabled nahi hai.');
+        }
+
+        try {
+            $mailPanel->updateDailyLimit((int) $data['daily_limit']);
+
+            return back()->with('success', 'Daily email cap updated to '.$data['daily_limit'].'.');
+        } catch (\Throwable $exception) {
+            return back()->with('error', 'Could not update cap: '.$exception->getMessage());
         }
     }
 

@@ -60,9 +60,15 @@
                 <p class="text-sm font-semibold text-ink">Buyahref Payment Hub credentials</p>
 
                 <div>
-                    <label class="ui-label">Hub URL</label>
+                    <label class="ui-label">Hub URL (public)</label>
                     <input class="ui-input font-mono text-sm" name="hub_url" value="{{ old('hub_url', $config['hub_url']) }}" required placeholder="https://buyahref.com/payment">
-                    <p class="mt-1 text-xs text-ink-muted">Payment Hub base URL (no trailing slash).</p>
+                    <p class="mt-1 text-xs text-ink-muted">Checkout redirect ke liye — customers is URL par jaate hain.</p>
+                </div>
+
+                <div>
+                    <label class="ui-label">Internal Hub URL (same server — recommended)</label>
+                    <input class="ui-input font-mono text-sm" name="hub_internal_url" value="{{ old('hub_internal_url', $config['hub_internal_url'] ?? '') }}" placeholder="http://127.0.0.1:8090">
+                    <p class="mt-1 text-xs text-ink-muted">Agar SemrushToolz aur Payment Hub <strong>same VPS</strong> par hain, yahan <code>http://127.0.0.1:8090</code> daalo — API calls direct local jayengi (HTML error fix).</p>
                 </div>
 
                 <div>

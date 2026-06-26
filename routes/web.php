@@ -208,6 +208,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/email-settings', [EmailSettingsController::class, 'edit'])->name('email-settings.edit');
         Route::put('/email-settings', [EmailSettingsController::class, 'update'])->name('email-settings.update');
         Route::post('/email-settings/test-connection', [EmailSettingsController::class, 'testConnection'])->name('email-settings.test-connection');
+        Route::put('/email-settings/daily-limit', [EmailSettingsController::class, 'updateDailyLimit'])->name('email-settings.daily-limit');
         Route::post('/email-settings/sync-all', [EmailSettingsController::class, 'syncAll'])->name('email-settings.sync-all');
         Route::post('/email-settings/test-send', [EmailSettingsController::class, 'testSend'])->name('email-settings.test-send');
 

@@ -48,6 +48,18 @@ class MailPanelClient
         return $this->request('GET', '/api/v1/stats/today');
     }
 
+    public function getSettings(): array
+    {
+        return $this->request('GET', '/api/v1/settings');
+    }
+
+    public function updateDailyLimit(int $dailyLimit): array
+    {
+        return $this->request('PATCH', '/api/v1/settings', [
+            'daily_limit' => $dailyLimit,
+        ]);
+    }
+
     private function request(string $method, string $path, ?array $payload = null): array
     {
         $config = MailPanelSettings::config();
@@ -65,6 +77,7 @@ class MailPanelClient
 
         $response = match (strtoupper($method)) {
             'GET' => $request->get($path),
+            'PATCH' => $request->patch($path, $payload ?? []),
             'DELETE' => $request->delete($path),
             default => $request->post($path, $payload ?? []),
         };

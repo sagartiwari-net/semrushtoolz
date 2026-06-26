@@ -33,7 +33,14 @@ class BuyahrefPaymentService
 
     public function hubUrl(): string
     {
-        return rtrim($this->config()['hub_url'], '/');
+        $config = $this->config();
+        $internal = rtrim((string) ($config['hub_internal_url'] ?? ''), '/');
+
+        if (filled($internal)) {
+            return $internal;
+        }
+
+        return rtrim($config['hub_url'], '/');
     }
 
     public function testConnection(): array
@@ -43,14 +50,39 @@ class BuyahrefPaymentService
         }
 
         try {
-            $this->request('GET', '/api/v1/merchants/me');
+            $health = Http::timeout(10)->get($this->hubUrl().'/health');
+
+            if (! $health->successful()) {
+                return [
+                    'ok' => false,
+                    'message' => 'Payment Hub unreachable at '.$this->hubUrl().' (HTTP '.$health->status().').',
+                ];
+            }
+        } catch (\Throwable $exception) {
+            return [
+                'ok' => false,
+                'message' => 'Cannot reach Payment Hub at '.$this->hubUrl().': '.$exception->getMessage(),
+            ];
+        }
+
+        try {
+            $this->request('GET', '/api/v1/orders/'.rawurlencode('__connection_test__').'/verify');
 
             return [
                 'ok' => true,
-                'message' => 'Connected to Buyahref Payment Hub.',
+                'message' => 'Connected to Buyahref Payment Hub at '.$this->hubUrl().'.',
             ];
-        } catch (RuntimeException $e) {
-            return ['ok' => false, 'message' => $e->getMessage()];
+        } catch (RuntimeException $exception) {
+            $message = strtolower($exception->getMessage());
+
+            if (str_contains($message, 'order not found')) {
+                return [
+                    'ok' => true,
+                    'message' => 'Payment Hub credentials OK at '.$this->hubUrl().'.',
+                ];
+            }
+
+            return ['ok' => false, 'message' => $exception->getMessage()];
         }
     }
 
