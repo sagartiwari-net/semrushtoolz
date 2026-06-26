@@ -68,7 +68,7 @@
                 <div>
                     <label class="ui-label">Internal Hub URL (same server — recommended)</label>
                     <input class="ui-input font-mono text-sm" name="hub_internal_url" value="{{ old('hub_internal_url', $config['hub_internal_url'] ?? '') }}" placeholder="http://127.0.0.1:8090">
-                    <p class="mt-1 text-xs text-ink-muted">Agar SemrushToolz aur Payment Hub <strong>same VPS</strong> par hain, yahan <code>http://127.0.0.1:8090</code> daalo — API calls direct local jayengi (HTML error fix).</p>
+                    <p class="mt-1 text-xs text-ink-muted">Optional. Sirf tab use karo jab SemrushToolz aur Payment Hub <strong>same server</strong> par hon. Alag server par <strong>khali chhodo</strong> — public URL use hoga.</p>
                 </div>
 
                 <div>

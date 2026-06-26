@@ -254,28 +254,28 @@ class BuyahrefPaymentService
         $signature = $this->sign($timestamp, strtoupper($method), $path, $body, $c['api_secret']);
 
         $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
             'X-Merchant-Key' => $c['api_key'],
             'X-Timestamp' => $timestamp,
             'X-Signature' => $signature,
             'Accept' => 'application/json',
+            'User-Agent' => 'SemrushToolz-PaymentHub/1.0',
         ])
             ->timeout(30)
-            ->connectTimeout(10);
-
-        $url = $this->hubUrl().$path;
-
-        $response = match (strtoupper($method)) {
-            'GET' => $response->get($url),
-            'DELETE' => $response->delete($url),
-            default => $response
-                ->withHeaders(['Content-Type' => 'application/json'])
-                ->withBody($body, 'application/json')
-                ->post($url),
-        };
+            ->connectTimeout(10)
+            ->withoutRedirecting()
+            ->withBody($body, 'application/json')
+            ->send(strtoupper($method), $this->hubUrl().$path);
 
         $decoded = $response->json();
 
         if (! $response->successful()) {
+            if ($response->status() >= 300 && $response->status() < 400) {
+                throw new RuntimeException(
+                    'Payment Hub redirected the request (HTTP '.$response->status().'). Check Hub URL is exactly https://buyahref.com/payment',
+                );
+            }
+
             $error = is_array($decoded) && filled($decoded['error'] ?? null)
                 ? (string) $decoded['error']
                 : 'HTTP '.$response->status();

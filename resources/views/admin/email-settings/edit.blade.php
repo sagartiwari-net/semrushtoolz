@@ -58,12 +58,21 @@
             <h2 class="text-base font-semibold text-ink">Daily send cap</h2>
             <p class="text-sm text-ink-secondary">
                 Mail Panel par is API key ke liye kitni emails roz bhej sakte ho.
+                <span class="block mt-1 text-xs text-ink-muted">Mail Panel alag server par hai (<strong>email.sagartiwari.net</strong>) — cap wahan update hoti hai.</span>
                 @if ($mailReady && ! empty($emailStats))
                     Abhi: <strong>{{ $emailStats['sent_today'] ?? 0 }}</strong> bheji /
                     cap <strong>{{ $emailStats['daily_limit'] ?? $emailStats['daily_cap'] ?? '?' }}</strong>
                     ({{ $emailStats['remaining'] ?? '?' }} bachi).
                 @endif
             </p>
+
+            @if (session('error') && str_contains(session('error'), 'settings'))
+                <div class="rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-ink-secondary">
+                    <strong>Quick fix (bina API deploy):</strong> Login to
+                    <a href="https://email.sagartiwari.net" class="text-accent hover:underline" target="_blank" rel="noopener">email.sagartiwari.net</a>
+                    → <strong>Tenants</strong> → apna account → <strong>Daily limit = 1000</strong> → Save.
+                </div>
+            @endif
 
             <form method="POST" action="{{ route('admin.email-settings.daily-limit') }}" class="flex flex-wrap items-end gap-3">
                 @csrf
