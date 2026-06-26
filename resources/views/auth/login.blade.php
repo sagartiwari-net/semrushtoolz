@@ -14,6 +14,9 @@
 
     @if (session('success'))
         <div class="mt-4 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">{{ session('success') }}</div>
+        @if (session('email_spam_tip'))
+            <x-email-spam-tip class="mt-3" />
+        @endif
     @endif
 
     @if ($errors->any())
@@ -77,6 +80,8 @@
         <div class="rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 text-sm text-ink-secondary">
             Code sent to <strong class="text-ink">{{ $otpEmail }}</strong>
         </div>
+
+        <x-email-spam-tip />
 
         <form class="space-y-5" action="{{ route('login.otp.verify') }}" method="POST">
             @csrf

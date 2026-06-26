@@ -80,7 +80,9 @@ class OtpAuthController extends Controller
             return back()->withErrors(['code' => $exception->getMessage()]);
         }
 
-        return back()->with('success', 'A new code has been sent to your email.');
+        return back()
+            ->with('email_spam_tip', true)
+            ->with('success', 'A new code has been sent to your email.');
     }
 
     /** Login with email + OTP only */
@@ -133,6 +135,7 @@ class OtpAuthController extends Controller
         return redirect()->route('login')
             ->with('login_mode', 'otp-verify')
             ->with('otp_login_email', $user->email)
+            ->with('email_spam_tip', true)
             ->with('success', 'Login code sent! Enter the 6-digit code below.');
     }
 
@@ -209,6 +212,7 @@ class OtpAuthController extends Controller
         return redirect()->route('login')
             ->with('login_mode', 'otp-verify')
             ->with('otp_login_email', $user->email)
+            ->with('email_spam_tip', true)
             ->with('success', 'A new login code has been sent.');
     }
 }

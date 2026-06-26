@@ -6,6 +6,7 @@
 
     @if (session('success'))
         <div class="mt-4 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">{{ session('success') }}</div>
+        <x-email-spam-tip class="mt-3" />
     @endif
 
     @if ($errors->any())

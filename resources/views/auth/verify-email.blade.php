@@ -13,8 +13,9 @@
             <p>Email sent to: <strong class="text-ink">{{ $email }}</strong></p>
         @endif
         <p class="mt-3">Click the link in the email to activate your account. After verification you can sign in.</p>
-        <p class="mt-2 text-xs text-ink-muted">Check spam folder if you don't see it within a few minutes.</p>
     </div>
+
+    <x-email-spam-tip class="mt-4" />
 
     <form class="mt-6" method="POST" action="{{ route('verification.send') }}">
         @csrf

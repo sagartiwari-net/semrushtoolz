@@ -51,11 +51,15 @@ class EmailVerificationController extends Controller
         }
 
         if (! $user || $user->hasVerifiedEmail()) {
-            return back()->with('success', 'If your account is pending verification, we sent a new link.');
+            return back()
+                ->with('email_spam_tip', true)
+                ->with('success', 'If your account is pending verification, we sent a new link.');
         }
 
         $user->sendEmailVerificationNotification();
 
-        return back()->with('success', 'Verification link sent! Check your inbox.');
+        return back()
+            ->with('email_spam_tip', true)
+            ->with('success', 'Verification link sent! Check your inbox.');
     }
 }

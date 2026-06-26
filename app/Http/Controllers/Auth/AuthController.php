@@ -77,6 +77,7 @@ class AuthController extends Controller
 
         return redirect()->route('verification.notice')
             ->with('email', $user->email)
+            ->with('email_spam_tip', true)
             ->with('success', 'Account created! Check your email to verify your account before signing in.');
     }
 

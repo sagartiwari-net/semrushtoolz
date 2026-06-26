@@ -8,6 +8,8 @@
         <div class="mt-4 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">{{ session('success') }}</div>
     @endif
 
+    <x-email-spam-tip class="mt-4" />
+
     @if ($errors->any())
         <div class="mt-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">{{ $errors->first() }}</div>
     @endif

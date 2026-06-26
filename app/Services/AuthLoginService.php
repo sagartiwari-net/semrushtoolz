@@ -63,6 +63,7 @@ class AuthLoginService
             }
 
             return redirect()->route('login.otp.challenge')
+                ->with('email_spam_tip', true)
                 ->with('success', 'We sent a verification code to your email.');
         }
 
