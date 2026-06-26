@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\AffiliateController as AdminAffiliateController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\EmailPresetController;
@@ -142,6 +143,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('index');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
+        Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::post('/users/{user}/password', [AdminUserController::class, 'updatePassword'])->name('users.password');
+        Route::post('/users/{user}/subscriptions', [AdminUserController::class, 'grantSubscription'])->name('users.subscriptions.grant');
+        Route::post('/users/{user}/subscriptions/{subscription}/extend', [AdminUserController::class, 'extendSubscription'])->name('users.subscriptions.extend');
+        Route::post('/users/{user}/subscriptions/{subscription}/cancel', [AdminUserController::class, 'cancelSubscription'])->name('users.subscriptions.cancel');
+        Route::post('/users/{user}/kill-sessions', [AdminUserController::class, 'killSessions'])->name('users.kill-sessions');
         Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
         Route::get('/plans/create', [PlanController::class, 'create'])->name('plans.create');
         Route::post('/plans', [PlanController::class, 'store'])->name('plans.store');

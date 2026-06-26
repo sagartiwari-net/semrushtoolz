@@ -54,9 +54,10 @@ class AdminController extends Controller
                 'id' => $u->id,
                 'name' => $u->name,
                 'email' => $u->email,
-                'plan' => $u->subscriptions->first()?->plan?->name ?? '—',
+                'plan' => $u->subscriptions->first(fn ($s) => $s->status === 'active' && $s->ends_at?->isFuture())?->plan?->name ?? '—',
                 'status' => ucfirst($u->status),
-                'joined' => $u->created_at->format('M Y'),
+                'verified' => (bool) $u->email_verified_at,
+                'joined' => $u->created_at->format('M d, Y'),
                 'alerts' => $u->security_alert_count,
             ]);
 
