@@ -22,6 +22,9 @@
             @if (session('error'))
                 <div class="mb-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">{{ session('error') }}</div>
             @endif
+            @if (session('security_warning'))
+                <div class="mb-4 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning">{{ session('security_warning') }}</div>
+            @endif
 
             @yield('content')
         </div>

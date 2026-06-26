@@ -18,7 +18,9 @@ class AuthLoginService
         Auth::login($user, $remember);
         $request->session()->regenerate();
 
-        app(SecurityMonitorService::class)->logActivity($user, $request, 'login');
+        $security = app(SecurityMonitorService::class);
+        $security->bindDeviceToSession($request);
+        $security->logActivity($user, $request, 'login');
     }
 
     public function redirectAfterLogin(User $user)
@@ -56,7 +58,11 @@ class AuthLoginService
                 ->with('success', 'We sent a verification code to your email.');
         }
 
-        app(SecurityMonitorService::class)->logActivity($user, $request, 'login');
+        $request->session()->regenerate();
+
+        $security = app(SecurityMonitorService::class);
+        $security->bindDeviceToSession($request);
+        $security->logActivity($user, $request, 'login');
 
         return $this->redirectAfterLogin($user);
     }

@@ -14,6 +14,7 @@ class UserLoginLog extends Model
         'device_type',
         'browser',
         'platform',
+        'device_fingerprint',
         'route',
         'action',
         'logged_at',

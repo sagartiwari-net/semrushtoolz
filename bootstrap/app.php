@@ -19,10 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'dashboard.track' => \App\Http\Middleware\TrackDashboardActivity::class,
+            'device.bind' => \App\Http\Middleware\BindDeviceSession::class,
             'user.blocked' => \App\Http\Middleware\CheckUserBlocked::class,
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         ]);
+
+        $middleware->trustProxies(at: '*');
 
         $middleware->web(append: [
             \App\Http\Middleware\CaptureReferral::class,

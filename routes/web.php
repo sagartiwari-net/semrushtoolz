@@ -90,7 +90,7 @@ Route::post('/email/verification-notification', [EmailVerificationController::cl
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-Route::prefix('dashboard')->name('dashboard.')->middleware(['auth', 'verified', 'user.blocked'])->group(function () {
+Route::prefix('dashboard')->name('dashboard.')->middleware(['auth', 'verified', 'user.blocked', 'device.bind', 'dashboard.track'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('index');
     Route::get('/activity', [DashboardController::class, 'activity'])->name('activity');
     Route::get('/shop', [DashboardController::class, 'shop'])->name('shop');

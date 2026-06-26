@@ -5,7 +5,10 @@ namespace App\Services;
 use App\Models\SecurityAlert;
 use App\Models\User;
 use App\Models\UserLoginLog;
+use App\Support\ClientIp;
+use App\Support\DeviceFingerprint;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SecurityMonitorService
@@ -16,26 +19,175 @@ class SecurityMonitorService
 
         $log = UserLoginLog::create([
             'user_id' => $user->id,
-            'ip_address' => $request->ip() ?? '0.0.0.0',
+            'ip_address' => ClientIp::from($request),
             'user_agent' => $request->userAgent(),
             'device_type' => $parsed['device'],
             'browser' => $parsed['browser'],
             'platform' => $parsed['platform'],
+            'device_fingerprint' => DeviceFingerprint::fromRequest($request),
             'route' => $request->route()?->getName(),
             'action' => $action,
             'logged_at' => now(),
         ]);
 
-        $this->analyzeUser($user);
+        $this->analyzeUser($user, $request);
 
         return $log;
     }
 
-    public function analyzeUser(User $user): void
+    public function logActivityThrottled(User $user, Request $request, string $action = 'page_view'): ?UserLoginLog
     {
-        $maxDaily = config('security.max_ips_per_day', 3);
-        $maxHourly = config('security.max_ips_per_hour', 2);
+        $minutes = config('security.activity_log_interval_minutes', 5);
+        $key = "security:activity:{$user->id}";
+
+        if (Cache::has($key)) {
+            return null;
+        }
+
+        Cache::put($key, true, now()->addMinutes($minutes));
+
+        return $this->logActivity($user, $request, $action);
+    }
+
+    public function bindDeviceToSession(Request $request): void
+    {
+        $fingerprint = DeviceFingerprint::fromRequest($request);
+
+        if (! $fingerprint) {
+            return;
+        }
+
+        $request->session()->put(DeviceFingerprint::SESSION_KEY, $fingerprint);
+    }
+
+    public function sessionDeviceMatches(Request $request): bool
+    {
+        $expected = $request->session()->get(DeviceFingerprint::SESSION_KEY);
+
+        if (! $expected) {
+            return true;
+        }
+
+        $current = DeviceFingerprint::fromRequest($request);
+
+        if (! $current) {
+            return true;
+        }
+
+        return hash_equals($expected, $current);
+    }
+
+    public function analyzeUser(User $user, ?Request $request = null): void
+    {
+        if ($this->isExempt($user)) {
+            return;
+        }
+
+        $window = now()->subHour();
+
+        $recentLogs = UserLoginLog::query()
+            ->where('user_id', $user->id)
+            ->where('logged_at', '>=', $window)
+            ->get(['ip_address', 'device_fingerprint']);
+
+        $uniqueIps = $recentLogs->pluck('ip_address')->filter()->unique()->values();
+        $uniqueDevices = $recentLogs->pluck('device_fingerprint')->filter()->unique()->values();
+
+        $ipCount = $uniqueIps->count();
+        $deviceCount = $uniqueDevices->count();
+
+        $warnIps = config('security.max_ips_warning_hour', 3);
+        $blockIps = config('security.max_ips_block_hour', 5);
+        $minDevicesWarn = config('security.min_devices_for_warning', 2);
+        $minDevicesBlock = config('security.min_devices_for_block', 2);
         $cooldown = config('security.alert_cooldown_minutes', 60);
+
+        $metadata = [
+            'ips' => $uniqueIps->all(),
+            'ip_count' => $ipCount,
+            'device_count' => $deviceCount,
+            'devices' => $uniqueDevices->all(),
+            'window' => '1 hour',
+        ];
+
+        if ($ipCount >= $blockIps && $deviceCount >= $minDevicesBlock) {
+            $this->handleSharingBlock($user, $metadata, $cooldown, $request);
+
+            return;
+        }
+
+        if ($ipCount >= $warnIps && $deviceCount >= $minDevicesWarn) {
+            $this->handleSharingWarning($user, $metadata, $cooldown, $request);
+        }
+
+        $this->analyzeLegacyIpThresholds($user, $cooldown);
+
+        $user->update(['last_ip_check_at' => now()]);
+    }
+
+    protected function handleSharingWarning(User $user, array $metadata, int $cooldown, ?Request $request): void
+    {
+        $alert = $this->createAlertIfNeeded(
+            $user,
+            'ip_sharing_warning',
+            'high',
+            array_merge($metadata, [
+                'reason' => 'Multiple IPs and devices in 1 hour — possible account sharing',
+            ]),
+            $cooldown,
+        );
+
+        if ($alert && $request) {
+            $request->session()->flash(
+                'security_warning',
+                'Unusual activity detected: your account was accessed from multiple locations/devices in the last hour. '
+                .'If this was not you, change your password and contact support.',
+            );
+        }
+    }
+
+    protected function handleSharingBlock(User $user, array $metadata, int $cooldown, ?Request $request): void
+    {
+        if (! config('security.auto_block_on_sharing', true)) {
+            $this->handleSharingWarning($user, $metadata, $cooldown, $request);
+
+            return;
+        }
+
+        $recentBlock = SecurityAlert::query()
+            ->where('user_id', $user->id)
+            ->where('type', 'ip_sharing_blocked')
+            ->where('created_at', '>=', now()->subMinutes($cooldown))
+            ->exists();
+
+        if ($recentBlock) {
+            return;
+        }
+
+        $ipList = implode(', ', $metadata['ips'] ?? []);
+
+        SecurityAlert::create([
+            'user_id' => $user->id,
+            'type' => 'ip_sharing_blocked',
+            'severity' => 'critical',
+            'title' => 'Auto-blocked — '.$user->name,
+            'description' => "User {$user->email} accessed from {$metadata['ip_count']} IP(s) and {$metadata['device_count']} device(s) in 1 hour. IPs: {$ipList}",
+            'metadata' => $metadata,
+            'status' => 'open',
+        ]);
+
+        $user->increment('security_alert_count');
+
+        $this->blockUser(
+            $user,
+            'Automatic block: account accessed from '.$metadata['ip_count'].' IPs on '.$metadata['device_count'].' devices within 1 hour.',
+        );
+    }
+
+    protected function analyzeLegacyIpThresholds(User $user, int $cooldown): void
+    {
+        $maxDaily = config('security.max_ips_per_day', 8);
+        $maxHourly = config('security.max_ips_per_hour', 6);
 
         $ipsLast24h = UserLoginLog::query()
             ->where('user_id', $user->id)
@@ -69,8 +221,6 @@ class SecurityMonitorService
                 'reason' => 'Multiple unique IPs detected — possible account sharing',
             ], $cooldown);
         }
-
-        $user->update(['last_ip_check_at' => now()]);
     }
 
     public function createAlertIfNeeded(
@@ -92,16 +242,21 @@ class SecurityMonitorService
         }
 
         $typeLabel = config("security.alert_types.{$type}", $type);
-        $count = $metadata['count'] ?? count($metadata['ips'] ?? []);
+        $count = $metadata['count'] ?? $metadata['ip_count'] ?? count($metadata['ips'] ?? []);
         $ipList = implode(', ', $metadata['ips'] ?? []);
         $window = $metadata['window'] ?? 'recent activity';
+        $deviceCount = $metadata['device_count'] ?? null;
+
+        $description = $deviceCount !== null
+            ? "User {$user->email} accessed from {$count} IP(s) and {$deviceCount} device(s) in {$window}. IPs: {$ipList}"
+            : "User {$user->email} accessed from {$count} different IP(s) in {$window}. IPs: {$ipList}";
 
         $alert = SecurityAlert::create([
             'user_id' => $user->id,
             'type' => $type,
             'severity' => $severity,
             'title' => "{$typeLabel} — {$user->name}",
-            'description' => "User {$user->email} accessed from {$count} different IP(s) in {$window}. IPs: {$ipList}",
+            'description' => $description,
             'metadata' => $metadata,
             'status' => 'open',
         ]);
@@ -152,8 +307,14 @@ class SecurityMonitorService
                 'count' => $group->count(),
                 'last_seen' => $group->first()->logged_at,
                 'devices' => $group->pluck('device_type')->unique()->values()->all(),
+                'fingerprints' => $group->pluck('device_fingerprint')->filter()->unique()->values()->all(),
             ]),
         ];
+    }
+
+    protected function isExempt(User $user): bool
+    {
+        return in_array($user->role, config('security.exempt_admin_roles', []), true);
     }
 
     protected function parseUserAgent(string $ua): array
