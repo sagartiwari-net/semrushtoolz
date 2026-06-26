@@ -60,11 +60,26 @@
                     <form method="POST" action="{{ route('dashboard.orders.proof', $order) }}" enctype="multipart/form-data" class="mt-5 space-y-4">
                         @csrf
                         <div>
+                            <label class="ui-label">Payment message</label>
+                            <textarea
+                                name="payment_note"
+                                class="ui-input"
+                                rows="4"
+                                placeholder="e.g. Paid via Binance — TXN ID ABC123. Order ref: {{ $order->order_number }}"
+                            >{{ old('payment_note', $order->payment_note) }}</textarea>
+                            <p class="mt-1 text-xs text-ink-muted">Transaction ID, UTR, Binance ID, or any note for admin verification.</p>
+                        </div>
+                        <div>
                             <label class="ui-label">Screenshot (JPG/PNG, max 5MB)</label>
                             <input type="file" name="payment_proof" accept="image/*" class="ui-input" required>
                         </div>
                         <button type="submit" class="ui-btn-primary w-full">Upload Proof</button>
                     </form>
+                @elseif ($order->payment_note)
+                    <div class="mt-4 rounded-xl border border-line bg-surface px-4 py-3 text-sm">
+                        <p class="font-semibold text-ink">Your payment message</p>
+                        <p class="mt-2 whitespace-pre-wrap text-ink-secondary">{{ $order->payment_note }}</p>
+                    </div>
                 @endif
             </div>
         </div>

@@ -15,7 +15,7 @@ class Order extends Model
         'taxable_amount', 'gst_rate', 'gst_amount',
         'wallet_amount_used', 'wallet_cashback_amount',
         'payment_method', 'hub_order_id', 'hub_payment_url', 'paypal_subscription_id', 'paypal_billing_plan_id', 'is_recurring',
-        'status', 'payment_proof',
+        'status', 'payment_proof', 'payment_note',
         'admin_note', 'paid_at', 'expires_at',
     ];
 

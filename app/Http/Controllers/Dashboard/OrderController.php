@@ -193,6 +193,7 @@ class OrderController extends Controller
 
         $request->validate([
             'payment_proof' => ['required', 'image', 'max:5120'],
+            'payment_note' => ['nullable', 'string', 'max:1000'],
         ]);
 
         if ($order->payment_proof) {
@@ -203,6 +204,7 @@ class OrderController extends Controller
 
         $order->update([
             'payment_proof' => $path,
+            'payment_note' => $request->input('payment_note'),
             'status' => 'verifying',
         ]);
 

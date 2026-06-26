@@ -77,7 +77,7 @@
                                 <td>{{ $order->user->name }}</td>
                                 <td>{{ $orderService->formatAmount($order) }}</td>
                                 <td>{{ $orderService->statusLabel($order->status) }}</td>
-                                <td>{{ $order->payment_proof ? 'Uploaded' : '—' }}</td>
+                                <td>{{ $order->payment_proof ? 'Uploaded' : '—' }}{{ $order->payment_note ? ' · note' : '' }}</td>
                                 <td><a href="{{ route('admin.orders.show', $order) }}" class="ui-btn-primary text-xs">Review</a></td>
                             </tr>
                         @empty

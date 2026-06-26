@@ -51,6 +51,13 @@
                 @endif
             </dl>
 
+            @if ($order->payment_note)
+                <div class="rounded-xl border border-line bg-surface px-4 py-3 text-sm">
+                    <strong>Customer message:</strong>
+                    <p class="mt-2 whitespace-pre-wrap text-ink-secondary">{{ $order->payment_note }}</p>
+                </div>
+            @endif
+
             @if ($order->payment_proof)
                 <div>
                     <h3 class="text-sm font-bold text-ink">Payment Proof</h3>
