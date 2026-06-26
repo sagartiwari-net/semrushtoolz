@@ -11,7 +11,7 @@
         Sign up to <strong class="text-ink">buy Semrush</strong> and <strong class="text-ink">buy Ahrefs</strong> at cheap price. One-click cloud access from your dashboard.
     </p>
 
-    <form class="mt-8 space-y-5" action="{{ route('register.submit') }}" method="POST">
+    <form class="relative mt-8 space-y-5" action="{{ route('register.submit') }}" method="POST">
         @csrf
 
         @if ($errors->any())
@@ -58,20 +58,21 @@
             </div>
         @endif
 
-        <div class="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
-            <label for="website">Website</label>
-            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
-        </div>
+        {{-- Honeypot for bots — no visible label --}}
+        <input type="text" name="website" value="" tabindex="-1" autocomplete="off" class="pointer-events-none absolute h-0 w-0 opacity-0" aria-hidden="true">
 
         @if ($turnstileEnabled ?? false)
-            <div class="cf-turnstile" data-sitekey="{{ $turnstileSiteKey }}"></div>
-            @error('captcha')
-                <p class="text-sm text-danger">{{ $message }}</p>
-            @enderror
+            <div class="rounded-xl border border-line bg-surface/50 px-4 py-3">
+                <p class="mb-2 text-xs font-medium text-ink-muted">Verify you are human</p>
+                <div class="cf-turnstile" data-sitekey="{{ $turnstileSiteKey }}" data-theme="light"></div>
+                @error('captcha')
+                    <p class="mt-2 text-sm text-danger">{{ $message }}</p>
+                @enderror
+            </div>
         @endif
 
         <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface/60 p-4">
-            <input type="checkbox" class="checkbox checkbox-sm checkbox-primary mt-0.5 shrink-0" name="terms" value="1" required>
+            <input type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 rounded border-line text-accent focus:ring-accent" name="terms" value="1" required>
             <span class="text-sm leading-relaxed text-ink-secondary">
                 I agree to the
                 <a href="{{ route('legal.terms') }}" class="font-medium text-accent hover:underline">Terms of Service</a>
