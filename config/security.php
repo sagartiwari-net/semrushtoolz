@@ -26,6 +26,8 @@ return [
 
     'purge_unverified_days' => (int) env('SECURITY_PURGE_UNVERIFIED_DAYS', 7),
 
+    'purge_notify_email' => env('ADMIN_NOTIFY_EMAIL', env('MAIL_FROM_ADDRESS')),
+
     'exempt_admin_roles' => ['admin', 'super_admin'],
 
     'alert_types' => [

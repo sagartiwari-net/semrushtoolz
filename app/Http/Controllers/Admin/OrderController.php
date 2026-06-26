@@ -20,7 +20,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['user', 'plan', 'tool']);
+        $order->load(['user', 'plan', 'tool', 'subscription']);
 
         $linkedSubscription = $order->status === 'completed' && $order->isSubscription()
             ? $this->subscriptions->findActiveForOrder($order)

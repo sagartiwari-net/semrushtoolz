@@ -26,12 +26,22 @@ class AdminUserQueryService
             $query->where('status', $request->status);
         }
 
+        if ($request->filled('joined_from')) {
+            $query->whereDate('created_at', '>=', $request->joined_from);
+        }
+
+        if ($request->filled('joined_to')) {
+            $query->whereDate('created_at', '<=', $request->joined_to);
+        }
+
         $planId = $request->integer('plan_id') ?: null;
         $toolId = $request->integer('tool_id') ?: null;
         $subscription = $request->input('subscription', 'all');
+        $expiresFrom = $request->input('expires_from');
+        $expiresTo = $request->input('expires_to');
 
-        if ($planId || $toolId || in_array($subscription, ['active', 'expired', 'none'], true)) {
-            $query->where(function ($userQuery) use ($planId, $toolId, $subscription) {
+        if ($planId || $toolId || in_array($subscription, ['active', 'expired', 'none'], true) || $expiresFrom || $expiresTo) {
+            $query->where(function ($userQuery) use ($planId, $toolId, $subscription, $expiresFrom, $expiresTo) {
                 if ($subscription === 'none') {
                     $userQuery->whereDoesntHave('subscriptions', function ($s) {
                         $this->scopeActive($s);
@@ -40,7 +50,7 @@ class AdminUserQueryService
                     return;
                 }
 
-                $userQuery->whereHas('subscriptions', function ($sub) use ($planId, $toolId, $subscription) {
+                $userQuery->whereHas('subscriptions', function ($sub) use ($planId, $toolId, $subscription, $expiresFrom, $expiresTo) {
                     if ($planId) {
                         $sub->where('plan_id', $planId);
                     }
@@ -50,6 +60,14 @@ class AdminUserQueryService
                             $inner->where('tool_id', $toolId)
                                 ->orWhereHas('plan.tools', fn ($t) => $t->where('tools.id', $toolId));
                         });
+                    }
+
+                    if ($expiresFrom) {
+                        $sub->whereDate('ends_at', '>=', $expiresFrom);
+                    }
+
+                    if ($expiresTo) {
+                        $sub->whereDate('ends_at', '<=', $expiresTo);
                     }
 
                     match ($subscription) {

@@ -49,6 +49,15 @@
                 @if ($order->paid_at)
                     <div><dt class="text-ink-muted">Paid</dt><dd>{{ $order->paid_at->format('M d, Y H:i') }}</dd></div>
                 @endif
+                @if ($order->subscription_id && $order->subscription)
+                    <div><dt class="text-ink-muted">Subscription</dt><dd>
+                        #{{ $order->subscription_id }}
+                        — {{ ucfirst($order->subscription->status) }}
+                        @if ($order->subscription->ends_at)
+                            (ends {{ $order->subscription->ends_at->format('M d, Y') }})
+                        @endif
+                    </dd></div>
+                @endif
             </dl>
 
             @if ($order->payment_note)
@@ -111,10 +120,10 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin.orders.refund', $order) }}" class="dash-card space-y-3 border-danger/30">
+            <form method="POST" action="{{ route('admin.orders.refund', $order) }}" id="refund" class="dash-card space-y-3 border-danger/30">
                 @csrf
                 <h3 class="font-bold text-danger">Refund order</h3>
-                <p class="text-sm text-ink-muted">Returns payment (wallet credit if applicable), ends subscription, and reverses affiliate commission.</p>
+                <p class="text-sm text-ink-muted">Marks order refunded and ends access. UPI/offline/PayPal refunds are processed by you manually — wallet payments are credited back automatically. PayPal refunds via webhook also sync here.</p>
                 <textarea name="reason" class="ui-input" rows="2" placeholder="Refund reason" required></textarea>
                 <button type="submit" class="ui-btn-outline w-full border-danger text-danger hover:bg-danger/10" onclick="return confirm('Refund this order?')">Process refund</button>
             </form>

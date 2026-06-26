@@ -316,15 +316,32 @@
                     <h3 class="dash-card-title">Recent orders</h3>
                     <div class="dash-table-wrap">
                         <table class="dash-table text-sm">
-                            <thead><tr><th>Order</th><th>Item</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                            <thead><tr><th>Order</th><th>Item</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr></thead>
                             <tbody>
                                 @foreach ($recentOrders as $order)
+                                    @php
+                                        $activeSub = $order->subscription && $order->subscription->isActive();
+                                    @endphp
                                     <tr>
                                         <td><a href="{{ route('admin.orders.show', $order) }}" class="text-accent hover:underline">{{ $order->order_number }}</a></td>
                                         <td>{{ $order->plan?->name ?? $order->tool?->name ?? '—' }}</td>
                                         <td>{{ $order->currency === 'inr' ? '₹' : '$' }}{{ number_format($order->total, 0) }}</td>
                                         <td>{{ ucfirst($order->status) }}</td>
                                         <td>{{ $order->created_at->format('M d, Y') }}</td>
+                                        <td class="text-xs whitespace-nowrap">
+                                            @if ($order->status === 'completed' && $order->isSubscription())
+                                                @if ($activeSub)
+                                                    <form method="POST" action="{{ route('admin.orders.revoke-access', $order) }}" class="inline" onsubmit="return confirm('Cancel plan without refund?')">
+                                                        @csrf
+                                                        <button type="submit" class="text-warning hover:underline">Revoke</button>
+                                                    </form>
+                                                    <span class="text-ink-muted">·</span>
+                                                @endif
+                                                <a href="{{ route('admin.orders.show', $order) }}#refund" class="text-danger hover:underline">Refund</a>
+                                            @else
+                                                <a href="{{ route('admin.orders.show', $order) }}" class="text-accent hover:underline">View</a>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>

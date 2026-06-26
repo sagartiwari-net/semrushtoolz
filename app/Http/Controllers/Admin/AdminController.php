@@ -9,6 +9,8 @@ use App\Services\AdminDashboardService;
 use App\Services\AdminUserQueryService;
 use App\Services\OrderExportService;
 use App\Services\OrderService;
+use App\Services\UserExportService;
+use App\Services\UserPurgeService;
 use App\Support\TablePageSize;
 use Illuminate\Http\Request;
 
@@ -59,8 +61,17 @@ class AdminController extends Controller
                 'plan_id' => $request->plan_id,
                 'tool_id' => $request->tool_id,
                 'subscription' => $request->input('subscription', 'all'),
+                'joined_from' => $request->joined_from,
+                'joined_to' => $request->joined_to,
+                'expires_from' => $request->expires_from,
+                'expires_to' => $request->expires_to,
             ],
         ]);
+    }
+
+    public function exportUsers(Request $request, UserExportService $export)
+    {
+        return $export->download($request);
     }
 
     public function unverifiedUsers(Request $request)
@@ -94,6 +105,17 @@ class AdminController extends Controller
                 'q' => $request->q,
             ],
         ]);
+    }
+
+    public function purgeEligibleUnverified(UserPurgeService $purge)
+    {
+        $result = $purge->purgeEligible('manual_bulk');
+
+        if ($result['deleted'] === 0) {
+            return back()->with('error', 'No eligible unverified accounts to delete (must be 7+ days old, no orders, no active plan).');
+        }
+
+        return back()->with('success', "Deleted {$result['deleted']} eligible unverified account(s).");
     }
 
     public function orders(Request $request)

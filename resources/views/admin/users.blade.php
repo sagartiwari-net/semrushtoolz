@@ -54,9 +54,26 @@
                     @endforeach
                 </select>
             </div>
+            <div>
+                <label class="ui-label text-xs">Joined from</label>
+                <input class="ui-input w-auto py-1.5 text-sm" type="date" name="joined_from" value="{{ $filters['joined_from'] ?? '' }}">
+            </div>
+            <div>
+                <label class="ui-label text-xs">Joined to</label>
+                <input class="ui-input w-auto py-1.5 text-sm" type="date" name="joined_to" value="{{ $filters['joined_to'] ?? '' }}">
+            </div>
+            <div>
+                <label class="ui-label text-xs">Expires from</label>
+                <input class="ui-input w-auto py-1.5 text-sm" type="date" name="expires_from" value="{{ $filters['expires_from'] ?? '' }}">
+            </div>
+            <div>
+                <label class="ui-label text-xs">Expires to</label>
+                <input class="ui-input w-auto py-1.5 text-sm" type="date" name="expires_to" value="{{ $filters['expires_to'] ?? '' }}">
+            </div>
         </div>
         <div class="flex flex-wrap gap-2">
             <button type="submit" class="ui-btn-primary text-sm">Apply filters</button>
+            <a href="{{ route('admin.users.export', request()->query()) }}" class="ui-btn-outline text-sm">Export CSV</a>
             <a href="{{ route('admin.users') }}" class="ui-btn-outline text-sm">Clear</a>
         </div>
     </form>

@@ -9,6 +9,12 @@
             <h1 class="dash-page-title mt-1">Unverified accounts</h1>
             <p class="text-sm text-ink-muted">Bot/fake signups that never verified email. Not shown in the main users list.</p>
         </div>
+        @if ($unverifiedStats['eligible_for_purge'] > 0)
+            <form method="POST" action="{{ route('admin.users.unverified.purge-eligible') }}" onsubmit="return confirm('Delete all {{ $unverifiedStats['eligible_for_purge'] }} eligible accounts?')">
+                @csrf
+                <button type="submit" class="ui-btn-outline border-danger text-danger text-sm">Delete all eligible ({{ $unverifiedStats['eligible_for_purge'] }})</button>
+            </form>
+        @endif
     </div>
 
     <div class="mb-4 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm">
@@ -64,8 +70,13 @@
                                 'dash-badge-offline' => $u['status'] === 'Blocked',
                             ])>{{ $u['status'] }}</span>
                         </td>
-                        <td>
+                        <td class="space-x-2">
                             <a href="{{ route('admin.users.show', $u['id']) }}" class="ui-btn-ghost text-xs">Profile</a>
+                            <form method="POST" action="{{ route('admin.users.unverified.delete', $u['id']) }}" class="inline" onsubmit="return confirm('Delete this unverified account?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="ui-btn-ghost text-xs text-danger">Delete</button>
+                            </form>
                         </td>
                     </tr>
                 @empty

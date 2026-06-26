@@ -2,10 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\User;
-use App\Services\AdminUserQueryService;
+use App\Services\UserPurgeService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class PurgeUnverifiedUsersCommand extends Command
 {
@@ -13,29 +11,21 @@ class PurgeUnverifiedUsersCommand extends Command
 
     protected $description = 'Delete unverified user accounts older than N days with no active subscription or completed order';
 
-    public function handle(AdminUserQueryService $queries): int
+    public function handle(UserPurgeService $purge): int
     {
         $days = (int) ($this->option('days') ?: config('security.purge_unverified_days', 7));
-        $cutoff = now()->subDays($days);
-
-        $candidates = User::query()
-            ->where('role', 'user')
-            ->whereNull('email_verified_at')
-            ->where('created_at', '<=', $cutoff)
-            ->whereDoesntHave('subscriptions', fn ($s) => $queries->scopeActive($s))
-            ->whereDoesntHave('orders', fn ($o) => $o->where('status', 'completed'))
-            ->orderBy('created_at')
-            ->get();
-
-        if ($candidates->isEmpty()) {
-            $this->info('No unverified users eligible for purge.');
-
-            return self::SUCCESS;
-        }
-
-        $this->info("Found {$candidates->count()} unverified user(s) older than {$days} day(s).");
 
         if ($this->option('dry-run')) {
+            $candidates = $purge->eligibleQuery($days)->orderBy('created_at')->get();
+
+            if ($candidates->isEmpty()) {
+                $this->info('No unverified users eligible for purge.');
+
+                return self::SUCCESS;
+            }
+
+            $this->info("Found {$candidates->count()} unverified user(s) older than {$days} day(s).");
+
             foreach ($candidates as $user) {
                 $this->line("  [dry-run] {$user->email} (joined {$user->created_at->toDateString()})");
             }
@@ -43,15 +33,18 @@ class PurgeUnverifiedUsersCommand extends Command
             return self::SUCCESS;
         }
 
-        $deleted = 0;
+        $result = $purge->purgeEligible('cron');
+        $deleted = $result['deleted'];
 
-        foreach ($candidates as $user) {
-            DB::table('sessions')->where('user_id', $user->id)->delete();
-            $user->delete();
-            $deleted++;
+        if ($deleted === 0) {
+            $this->info('No unverified users eligible for purge.');
+
+            return self::SUCCESS;
         }
 
-        $this->info("Deleted {$deleted} unverified account(s).");
+        $purge->notifyAdmin($deleted, $result['emails']);
+
+        $this->info("Deleted {$deleted} unverified account(s). Admin notified if email configured.");
 
         return self::SUCCESS;
     }

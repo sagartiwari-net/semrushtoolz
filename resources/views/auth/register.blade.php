@@ -58,6 +58,18 @@
             </div>
         @endif
 
+        <div class="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+            <label for="website">Website</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+        </div>
+
+        @if ($turnstileEnabled ?? false)
+            <div class="cf-turnstile" data-sitekey="{{ $turnstileSiteKey }}"></div>
+            @error('captcha')
+                <p class="text-sm text-danger">{{ $message }}</p>
+            @enderror
+        @endif
+
         <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface/60 p-4">
             <input type="checkbox" class="checkbox checkbox-sm checkbox-primary mt-0.5 shrink-0" name="terms" value="1" required>
             <span class="text-sm leading-relaxed text-ink-secondary">
@@ -151,3 +163,9 @@
 @section('footer_link')
     Already have an account? <a href="{{ route('login') }}" class="font-medium text-accent hover:underline">Sign in</a>
 @endsection
+
+@if ($turnstileEnabled ?? false)
+    @push('scripts')
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    @endpush
+@endif

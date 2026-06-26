@@ -70,7 +70,7 @@ class AdminUserService
             'user' => $user,
             'activeSubscriptions' => $this->subscriptions->activeSubscriptions($user),
             'subscriptionHistory' => $user->subscriptions()->with(['plan', 'tool'])->orderByDesc('created_at')->limit(20)->get(),
-            'recentOrders' => Order::with(['plan', 'tool'])
+            'recentOrders' => Order::with(['plan', 'tool', 'subscription'])
                 ->where('user_id', $user->id)
                 ->orderByDesc('created_at')
                 ->limit(15)

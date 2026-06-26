@@ -159,7 +159,7 @@
                 <div class="rounded-xl bg-surface p-4 text-sm">
                     <p class="font-semibold text-ink">Webhook URL (paste in PayPal Developer)</p>
                     <p class="mt-2 break-all font-mono text-xs text-ink-secondary">{{ $paypalWebhookUrl }}</p>
-                    <p class="mt-2 text-xs text-ink-muted">Events: <code>BILLING.SUBSCRIPTION.ACTIVATED</code>, <code>BILLING.SUBSCRIPTION.PAYMENT.SUCCEEDED</code>, <code>BILLING.SUBSCRIPTION.CANCELLED</code>, <code>BILLING.SUBSCRIPTION.EXPIRED</code></p>
+                    <p class="mt-2 text-xs text-ink-muted">Events: <code>BILLING.SUBSCRIPTION.ACTIVATED</code>, <code>BILLING.SUBSCRIPTION.PAYMENT.SUCCEEDED</code>, <code>BILLING.SUBSCRIPTION.CANCELLED</code>, <code>BILLING.SUBSCRIPTION.EXPIRED</code>, <code>PAYMENT.SALE.REFUNDED</code>, <code>PAYMENT.CAPTURE.REFUNDED</code></p>
                 </div>
 
                 <div class="flex flex-wrap gap-3">

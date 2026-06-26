@@ -9,6 +9,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Services\AdminUserService;
 use App\Services\SecurityMonitorService;
+use App\Services\UserPurgeService;
 use App\Services\UserSessionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -126,5 +127,16 @@ class UserController extends Controller
         $count = $this->sessions->killAllSessions($user->id);
 
         return back()->with('success', "Ended {$count} active session(s).");
+    }
+
+    public function deleteUnverified(User $user, UserPurgeService $purge)
+    {
+        $email = $user->email;
+
+        if (! $purge->purgeUser($user, 'unverified_manual', 'manual')) {
+            return back()->with('error', 'Cannot delete this account (verified, has orders, or active plan).');
+        }
+
+        return redirect()->route('admin.users.unverified')->with('success', "Deleted unverified account {$email}.");
     }
 }

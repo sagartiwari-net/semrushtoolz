@@ -7,9 +7,13 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Tool;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class SubscriptionService
 {
+    public function __construct(
+        protected PayPalService $paypal,
+    ) {}
     public function activeSubscriptions(User $user)
     {
         return $user->subscriptions()
@@ -124,11 +128,13 @@ class SubscriptionService
                 ->first();
 
             if ($existing) {
+                $order->update(['subscription_id' => $existing->id]);
+
                 return $this->renewFromPayPal($existing, (float) $order->total);
             }
         }
 
-        return Subscription::create([
+        $subscription = Subscription::create([
             'user_id' => $user->id,
             'plan_id' => $order->plan_id,
             'tool_id' => $order->tool_id,
@@ -143,12 +149,23 @@ class SubscriptionService
             'paypal_subscription_id' => $isPayPal ? $order->paypal_subscription_id : null,
             'next_billing_at' => $isPayPal ? $endsAt : null,
         ]);
+
+        $order->update(['subscription_id' => $subscription->id]);
+
+        return $subscription;
     }
 
     public function findActiveForOrder(Order $order): ?Subscription
     {
         if (! $order->user_id || $order->isWalletTopup()) {
             return null;
+        }
+
+        if ($order->subscription_id) {
+            $linked = Subscription::find($order->subscription_id);
+            if ($linked && $linked->isActive()) {
+                return $linked;
+            }
         }
 
         $query = Subscription::query()
@@ -169,12 +186,25 @@ class SubscriptionService
         return $query->orderByDesc('created_at')->first();
     }
 
-    public function cancelWithoutRefund(Subscription $subscription): void
+    public function cancelWithoutRefund(Subscription $subscription, string $reason = 'Cancelled by admin'): void
     {
+        if ($subscription->paypal_subscription_id) {
+            try {
+                $this->paypal->cancelSubscription($subscription->paypal_subscription_id, $reason);
+            } catch (\Throwable $e) {
+                Log::warning('PayPal subscription cancel failed', [
+                    'subscription_id' => $subscription->id,
+                    'paypal_subscription_id' => $subscription->paypal_subscription_id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         $subscription->update([
             'status' => 'cancelled',
             'ends_at' => now(),
             'auto_renew' => false,
+            'next_billing_at' => null,
         ]);
     }
 

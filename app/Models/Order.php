@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Order extends Model
 {
     protected $fillable = [
-        'user_id', 'plan_id', 'tool_id', 'order_number', 'order_type', 'duration_months', 'duration_days',
+        'user_id', 'plan_id', 'tool_id', 'subscription_id', 'order_number', 'order_type', 'duration_months', 'duration_days',
         'currency', 'subtotal', 'discount', 'total',
         'coupon_id', 'coupon_code', 'coupon_discount',
         'referral_bonus_discount', 'referral_bonus_percent',
@@ -51,6 +51,11 @@ class Order extends Model
     public function tool(): BelongsTo
     {
         return $this->belongsTo(Tool::class);
+    }
+
+    public function subscription(): BelongsTo
+    {
+        return $this->belongsTo(Subscription::class);
     }
 
     public function coupon(): BelongsTo

@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\PayPalWebhookEvent;
 use App\Models\Subscription;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class PayPalWebhookService
@@ -44,6 +43,9 @@ class PayPalWebhookService
                 'BILLING.SUBSCRIPTION.CANCELLED',
                 'BILLING.SUBSCRIPTION.EXPIRED' => $this->handleEnded($event, 'cancelled'),
                 'BILLING.SUBSCRIPTION.SUSPENDED' => $this->handleEnded($event, 'suspended'),
+                'PAYMENT.SALE.REFUNDED',
+                'PAYMENT.CAPTURE.REFUNDED',
+                'PAYMENT.SALE.REVERSED' => $this->handleRefunded($event),
                 default => null,
             };
 
@@ -121,7 +123,6 @@ class PayPalWebhookService
             return;
         }
 
-        // Initial payment is handled during order approval — skip duplicate extension.
         if ($subscription->ends_at->gt(now()->addDays(15))) {
             return;
         }
@@ -145,5 +146,50 @@ class PayPalWebhookService
                 'auto_renew' => false,
                 'next_billing_at' => null,
             ]);
+    }
+
+    protected function handleRefunded(array $event): void
+    {
+        $subscriptionId = data_get($event, 'resource.billing_agreement_id')
+            ?? data_get($event, 'resource.supplementary_data.related_ids.subscription_id');
+
+        $customId = data_get($event, 'resource.custom')
+            ?? data_get($event, 'resource.custom_id')
+            ?? data_get($event, 'resource.invoice_number');
+
+        $order = null;
+
+        if ($customId) {
+            $order = Order::where('order_number', $customId)
+                ->whereIn('status', ['completed', 'refunded'])
+                ->latest()
+                ->first();
+        }
+
+        if (! $order && $subscriptionId) {
+            $order = Order::where('paypal_subscription_id', $subscriptionId)
+                ->whereIn('status', ['completed', 'refunded'])
+                ->latest()
+                ->first();
+        }
+
+        $note = 'PayPal webhook: '.($event['event_type'] ?? 'refund').' ('.($event['id'] ?? '').')';
+
+        if ($order && $order->status === 'completed') {
+            $this->orders->markRefundedFromPayPal($order, $note);
+
+            return;
+        }
+
+        if ($subscriptionId) {
+            Subscription::where('paypal_subscription_id', $subscriptionId)
+                ->where('status', 'active')
+                ->update([
+                    'status' => 'cancelled',
+                    'ends_at' => now(),
+                    'auto_renew' => false,
+                    'next_billing_at' => null,
+                ]);
+        }
     }
 }

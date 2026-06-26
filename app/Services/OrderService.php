@@ -529,6 +529,39 @@ class OrderService
         });
     }
 
+    public function markRefundedFromPayPal(Order $order, string $note): Order
+    {
+        if ($order->status === 'refunded') {
+            return $order;
+        }
+
+        if ($order->status !== 'completed') {
+            throw new \RuntimeException('Only completed orders can be marked refunded from PayPal.');
+        }
+
+        return DB::transaction(function () use ($order, $note) {
+            $subscription = $order->subscription_id
+                ? $order->subscription
+                : $this->subscriptions->findActiveForOrder($order);
+
+            if ($subscription && $subscription->isActive()) {
+                $this->subscriptions->cancelWithoutRefund($subscription, 'PayPal refund');
+            }
+
+            $this->walletCashback->reverseForOrder($order);
+
+            $existing = trim((string) $order->admin_note);
+            $order->update([
+                'status' => 'refunded',
+                'admin_note' => $existing !== '' ? $existing."\n".$note : $note,
+            ]);
+
+            $this->affiliates->reverseCommissionForOrder($order);
+
+            return $order->fresh();
+        });
+    }
+
     public function statusLabel(string $status): string
     {
         return match ($status) {

@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Services\ReferralService;
 use App\Services\ReferralSignupBonusService;
+use App\Services\TurnstileService;
 
 class AuthPageController extends Controller
 {
     public function __construct(
         protected ReferralService $referrals,
         protected ReferralSignupBonusService $referralBonus,
+        protected TurnstileService $turnstile,
     ) {}
 
     public function login()
@@ -37,6 +39,8 @@ class AuthPageController extends Controller
                 'keywords' => 'buy semrush, buy ahrefs, semrush group buy, ahrefs group buy, group buy semrush, cheap ahrefs account, semrush cheap, register semrushtoolz',
             ],
             'signupBonus' => $this->referralBonus->signupBanner($referralCode, $referrer?->name),
+            'turnstileSiteKey' => $this->turnstile->siteKey(),
+            'turnstileEnabled' => $this->turnstile->isEnabled(),
         ]);
     }
 

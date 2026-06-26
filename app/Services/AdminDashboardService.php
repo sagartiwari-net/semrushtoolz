@@ -22,10 +22,13 @@ class AdminDashboardService
 
     public function stats(): array
     {
-        $totalUsers = User::whereIn('role', ['user'])->count();
-        $newThisWeek = User::whereIn('role', ['user'])
+        $verifiedUsers = User::where('role', 'user')->whereNotNull('email_verified_at');
+        $totalUsers = (clone $verifiedUsers)->count();
+        $newThisWeek = (clone $verifiedUsers)
             ->where('created_at', '>=', now()->subDays(7))
             ->count();
+
+        $unverifiedBots = User::where('role', 'user')->whereNull('email_verified_at')->count();
 
         $activeSubs = Subscription::where('status', 'active')
             ->where('ends_at', '>', now())
@@ -73,9 +76,11 @@ class AdminDashboardService
 
         return [
             [
-                'label' => 'Total Users',
+                'label' => 'Verified Users',
                 'value' => number_format($totalUsers),
-                'sub' => $newThisWeek > 0 ? "+{$newThisWeek} this week" : 'No new users this week',
+                'sub' => $newThisWeek > 0
+                    ? "+{$newThisWeek} this week"
+                    : ($unverifiedBots > 0 ? "{$unverifiedBots} unverified bots separate" : 'No new users this week'),
                 'icon' => 'blue',
             ],
             [

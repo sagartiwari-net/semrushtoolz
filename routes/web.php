@@ -73,7 +73,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/login/verify-otp/resend', [OtpAuthController::class, 'resendChallenge'])->name('login.otp.challenge.resend');
 
     Route::get('/register', [AuthPageController::class, 'register'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1')->name('register.submit');
 
     Route::get('/forgot-password', [PasswordResetController::class, 'requestForm'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendLink'])->name('password.email');
@@ -143,7 +143,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('index');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::get('/users/export/csv', [AdminController::class, 'exportUsers'])->name('users.export');
         Route::get('/users/unverified', [AdminController::class, 'unverifiedUsers'])->name('users.unverified');
+        Route::post('/users/unverified/purge-eligible', [AdminController::class, 'purgeEligibleUnverified'])->name('users.unverified.purge-eligible');
+        Route::delete('/users/unverified/{user}', [AdminUserController::class, 'deleteUnverified'])->name('users.unverified.delete');
         Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
         Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::post('/users/{user}/password', [AdminUserController::class, 'updatePassword'])->name('users.password');
