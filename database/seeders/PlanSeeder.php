@@ -36,6 +36,7 @@ class PlanSeeder extends Seeder
                 'is_bundle' => true,
                 'show_on_homepage' => true,
                 'sort_order' => 1,
+                'amember_product_ids' => config('tool_endpoints.plan_product_ids.combo'),
             ]
         );
 
@@ -66,6 +67,7 @@ class PlanSeeder extends Seeder
                 'is_trial' => true,
                 'show_on_homepage' => true,
                 'sort_order' => 2,
+                'amember_product_ids' => config('tool_endpoints.plan_product_ids.combo_trial'),
             ]
         );
 

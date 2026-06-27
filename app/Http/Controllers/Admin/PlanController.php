@@ -77,6 +77,13 @@ class PlanController extends Controller
             unset($data['features_text']);
         }
 
+        if (array_key_exists('amember_product_ids', $data)) {
+            $raw = trim((string) $data['amember_product_ids']);
+            $data['amember_product_ids'] = $raw === ''
+                ? null
+                : array_values(array_unique(array_map('intval', array_filter(array_map('trim', explode(',', $raw))))));
+        }
+
         $toolIds = $data['tool_ids'] ?? [];
         unset($data['tool_ids']);
 

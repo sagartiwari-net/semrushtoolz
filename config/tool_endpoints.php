@@ -16,7 +16,8 @@ return [
     'plan_product_ids' => [
         'semrush' => array_map('intval', explode(',', env('PLAN_PRODUCT_IDS_SEMRUSH', '1'))),
         'semrush_site_audit' => array_map('intval', explode(',', env('PLAN_PRODUCT_IDS_SEMRUSH_SITE', '2'))),
-        'combo' => array_map('intval', explode(',', env('PLAN_PRODUCT_IDS_COMBO', '1,2,3'))),
+        'combo' => array_map('intval', explode(',', env('PLAN_PRODUCT_IDS_COMBO', '1,2,3,4,5,6,7,22,29,11'))),
+        'combo_trial' => array_map('intval', explode(',', env('PLAN_PRODUCT_IDS_COMBO_TRIAL', '1,2,3,4,5,6,7,22,29,11'))),
         'ahrefs_plan_1' => array_map('intval', explode(',', env('PLAN_PRODUCT_IDS_AHREFS_1', '4'))),
         'ahrefs_plan_2' => array_map('intval', explode(',', env('PLAN_PRODUCT_IDS_AHREFS_2', '5'))),
         'ahrefs_plan_3' => array_map('intval', explode(',', env('PLAN_PRODUCT_IDS_AHREFS_3', '6'))),

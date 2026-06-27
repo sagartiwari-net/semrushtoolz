@@ -27,12 +27,7 @@ class ExtensionAccessService
             throw new \RuntimeException('Active subscription required for extension access.');
         }
 
-        $planIds = $this->subscriptions->activeSubscriptions($user)
-            ->whereNotNull('plan_id')
-            ->pluck('plan_id')
-            ->map(fn ($id) => (int) $id)
-            ->values()
-            ->all();
+        $planIds = app(ToolEndpointService::class)->resolveProductIds($user);
 
         $payload = [
             'secret_key' => $config['secret_key'],

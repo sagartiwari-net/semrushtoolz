@@ -32,6 +32,7 @@ class StorePlanRequest extends FormRequest
             'show_on_homepage' => ['nullable', 'boolean'],
             'is_bundle' => ['nullable', 'boolean'],
             'is_trial' => ['nullable', 'boolean'],
+            'amember_product_ids' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

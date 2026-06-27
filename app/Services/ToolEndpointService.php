@@ -94,16 +94,39 @@ class ToolEndpointService
     public function resolveProductIds(User $user): array
     {
         $ids = [];
+        $fallbackMap = config('tool_endpoints.plan_product_ids', []);
 
         foreach (app(SubscriptionService::class)->activeSubscriptions($user) as $sub) {
-            if ($sub->plan_id) {
-                $ids[] = (int) $sub->plan_id;
-            } elseif ($sub->tool_id) {
-                $ids[] = (int) $sub->tool_id;
+            if ($sub->plan_id && $sub->plan) {
+                $ids = array_merge($ids, $this->productIdsForPlan($sub->plan, $fallbackMap));
+            } elseif ($sub->tool_id && $sub->tool) {
+                $ids = array_merge($ids, $this->productIdsForToolSlug($sub->tool->slug, $fallbackMap));
             }
         }
 
-        return array_values(array_unique($ids));
+        return array_values(array_unique(array_filter(array_map('intval', $ids))));
+    }
+
+    /**
+     * @param  array<string, array<int>>  $fallbackMap
+     * @return array<int>
+     */
+    protected function productIdsForPlan(\App\Models\Plan $plan, array $fallbackMap): array
+    {
+        if (is_array($plan->amember_product_ids) && $plan->amember_product_ids !== []) {
+            return array_map('intval', $plan->amember_product_ids);
+        }
+
+        return $this->productIdsForToolSlug($plan->slug, $fallbackMap);
+    }
+
+    /**
+     * @param  array<string, array<int>>  $fallbackMap
+     * @return array<int>
+     */
+    protected function productIdsForToolSlug(string $slug, array $fallbackMap): array
+    {
+        return array_map('intval', $fallbackMap[$slug] ?? []);
     }
 
     protected function buttonFromServer(ToolAccessServer $server): array

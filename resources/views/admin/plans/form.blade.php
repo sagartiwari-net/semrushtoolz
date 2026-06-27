@@ -7,7 +7,7 @@
         <a href="{{ route('admin.plans.index') }}" class="text-sm text-ink-muted hover:text-accent">&larr; Plans</a>
         <h1 class="dash-page-title mt-2">{{ $plan->exists ? 'Edit Plan' : 'Add Plan' }}</h1>
         @if ($plan->exists)
-            <p class="mt-1 text-sm text-ink-muted">Plan ID: <strong class="font-mono text-ink">#{{ $plan->id }}</strong> — sent automatically to proxy/extension servers for access verification.</p>
+            <p class="mt-1 text-sm text-ink-muted">Internal plan ID: <strong class="font-mono text-ink">#{{ $plan->id }}</strong> (database only).</p>
         @endif
         @if ($plan->slug === 'combo_trial')
             <p class="mt-2 text-sm text-ink-muted">Trial prices (1 / 3 / 5 days) are configured in <code class="text-xs">config/pricing.php</code> → <code class="text-xs">trial_durations</code>.</p>
@@ -35,6 +35,12 @@
                 <option value="ahrefs" @selected(old('display_group', $plan->display_group) === 'ahrefs')>Ahrefs Plans section</option>
             </select>
             <p class="mt-1 text-xs text-ink-muted">Which block on homepage/shop this plan appears in.</p>
+        </div>
+
+        <div>
+            <label class="ui-label">Access server product IDs</label>
+            <input class="ui-input font-mono" name="amember_product_ids" value="{{ old('amember_product_ids', implode(',', $plan->amember_product_ids ?? [])) }}" placeholder="1,2,3,4,5,6,7,22,29,11">
+            <p class="mt-1 text-xs text-ink-muted">Comma-separated aMember/ToolsMandi product IDs sent during handshake. Must match the allowed product IDs on your access server for this tool.</p>
         </div>
 
         <div><label class="ui-label">Tagline</label><input class="ui-input" name="tagline" value="{{ old('tagline', $plan->tagline) }}"></div>
