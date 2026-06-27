@@ -9,6 +9,10 @@ use App\Models\Plan;
 use App\Models\ReferralClick;
 use App\Models\User;
 use App\Models\UserLoginLog;
+use App\Support\TablePageSize;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class AdminUserService
 {
@@ -19,77 +23,119 @@ class AdminUserService
         protected AffiliateService $affiliates,
     ) {}
 
-    public function profile(User $user): array
+    public function profile(User $user, Request $request): array
     {
         $user->load(['referrer', 'subscriptions.plan', 'subscriptions.tool']);
+
+        $tab = $request->query('tab', 'account');
+        $affiliateTab = $request->query('affiliate_tab', 'referrals');
+        $perPage = TablePageSize::resolve($request);
 
         $securitySummary = $this->security->getUserIpSummary($user->id);
         $activeSessions = $this->sessions
             ->activeSessions($user->id)
             ->map(fn ($session) => $this->sessions->formatSessionRow($session));
 
-        $recentLogs = UserLoginLog::query()
+        $uniqueDevicesWeek = UserLoginLog::query()
             ->where('user_id', $user->id)
-            ->orderByDesc('logged_at')
-            ->limit(50)
-            ->get();
-
-        $uniqueDevices = $recentLogs->pluck('device_fingerprint')->filter()->unique()->count();
-        $uniqueIpsWeek = $securitySummary['unique_ips'];
+            ->where('logged_at', '>=', now()->subDays(7))
+            ->whereNotNull('device_fingerprint')
+            ->distinct()
+            ->count('device_fingerprint');
 
         $affiliateStats = $this->affiliates->statsFor($user);
-        $referrals = User::where('referred_by_user_id', $user->id)
-            ->orderByDesc('created_at')
-            ->limit(20)
-            ->get(['id', 'name', 'email', 'created_at', 'status']);
-
-        $commissions = AffiliateCommission::with(['referred', 'order'])
-            ->where('referrer_user_id', $user->id)
-            ->orderByDesc('created_at')
-            ->limit(25)
-            ->get();
-
-        $payouts = AffiliatePayout::where('user_id', $user->id)
-            ->orderByDesc('created_at')
-            ->limit(15)
-            ->get();
-
-        $referralClicks = ReferralClick::query()
-            ->where('referral_code', $user->referral_code)
-            ->orderByDesc('clicked_at')
-            ->limit(15)
-            ->get();
-
         $referredBy = $user->referrer;
         $wasReferred = AffiliateCommission::with('referrer')
             ->where('referred_user_id', $user->id)
             ->orderByDesc('created_at')
             ->first();
 
-        return [
-            'user' => $user,
-            'activeSubscriptions' => $this->subscriptions->activeSubscriptions($user),
-            'subscriptionHistory' => $user->subscriptions()->with(['plan', 'tool'])->orderByDesc('created_at')->limit(20)->get(),
-            'recentOrders' => Order::with(['plan', 'tool', 'subscription'])
+        $activeSubscriptions = $this->subscriptions->activeSubscriptions($user);
+
+        $subscriptionHistory = $this->emptyPaginator();
+        $accessLogs = $this->emptyPaginator();
+        $orders = $this->emptyPaginator();
+        $referrals = $this->emptyPaginator();
+        $commissions = $this->emptyPaginator();
+        $payouts = $this->emptyPaginator();
+
+        if ($tab === 'subscriptions') {
+            $subscriptionHistory = $user->subscriptions()
+                ->with(['plan', 'tool'])
+                ->orderByDesc('created_at')
+                ->paginate($perPage)
+                ->withQueryString();
+        }
+
+        if ($tab === 'activity') {
+            $accessLogs = UserLoginLog::query()
+                ->where('user_id', $user->id)
+                ->orderByDesc('logged_at')
+                ->paginate($perPage)
+                ->withQueryString();
+        }
+
+        if ($tab === 'orders') {
+            $orders = Order::with(['plan', 'tool', 'subscription'])
                 ->where('user_id', $user->id)
                 ->orderByDesc('created_at')
-                ->limit(15)
-                ->get(),
+                ->paginate($perPage)
+                ->withQueryString();
+        }
+
+        if ($tab === 'affiliate') {
+            match ($affiliateTab) {
+                'commissions' => $commissions = AffiliateCommission::with(['referred', 'order'])
+                    ->where('referrer_user_id', $user->id)
+                    ->orderByDesc('created_at')
+                    ->paginate($perPage)
+                    ->withQueryString(),
+                'payouts' => $payouts = AffiliatePayout::where('user_id', $user->id)
+                    ->orderByDesc('created_at')
+                    ->paginate($perPage)
+                    ->withQueryString(),
+                default => $referrals = User::where('referred_by_user_id', $user->id)
+                    ->orderByDesc('created_at')
+                    ->paginate($perPage, ['id', 'name', 'email', 'created_at', 'status'])
+                    ->withQueryString(),
+            };
+        }
+
+        return [
+            'user' => $user,
+            'tab' => $tab,
+            'affiliateTab' => $affiliateTab,
+            'perPage' => $perPage,
+            'activeSubscriptions' => $activeSubscriptions,
+            'subscriptionHistory' => $subscriptionHistory,
+            'orders' => $orders,
             'security' => $securitySummary,
-            'uniqueDevicesWeek' => $uniqueDevices,
-            'uniqueIpsWeek' => $uniqueIpsWeek,
+            'uniqueDevicesWeek' => $uniqueDevicesWeek,
+            'uniqueIpsWeek' => $securitySummary['unique_ips'],
             'activeSessions' => $activeSessions,
-            'accessLogs' => $recentLogs,
+            'accessLogs' => $accessLogs,
             'openAlerts' => $user->securityAlerts()->where('status', 'open')->orderByDesc('created_at')->get(),
             'affiliate' => $affiliateStats,
             'referrals' => $referrals,
             'commissions' => $commissions,
             'payouts' => $payouts,
-            'referralClicks' => $referralClicks,
             'referredBy' => $referredBy,
             'referralCommission' => $wasReferred,
             'plans' => Plan::where('is_active', true)->orderBy('sort_order')->get(),
+            'ordersCount' => Order::where('user_id', $user->id)->count(),
+            'accessLogsCount' => UserLoginLog::where('user_id', $user->id)->count(),
+            'referralsCount' => User::where('referred_by_user_id', $user->id)->count(),
         ];
+    }
+
+    protected function emptyPaginator(): LengthAwarePaginator
+    {
+        return new \Illuminate\Pagination\LengthAwarePaginator(
+            Collection::make(),
+            0,
+            TablePageSize::DEFAULT,
+            1,
+        );
     }
 
     public function grantSubscription(User $user, Plan $plan, int $durationMonths, ?int $durationDays = null): \App\Models\Subscription

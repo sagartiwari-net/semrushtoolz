@@ -2,6 +2,7 @@
     'tabs' => [],
     'active' => '',
     'preserve' => [],
+    'param' => 'tab',
 ])
 
 @php
@@ -12,7 +13,7 @@
     <div class="dash-tab-list" role="tablist">
         @foreach ($tabs as $key => $label)
             @php
-                $params = array_merge(request()->only($preserve), ['tab' => $key]);
+                $params = array_merge(request()->only($preserve), [$param => $key]);
                 $isActive = $active === $key;
             @endphp
             <a

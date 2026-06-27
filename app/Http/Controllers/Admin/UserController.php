@@ -23,9 +23,9 @@ class UserController extends Controller
         protected UserSessionService $sessions,
     ) {}
 
-    public function show(User $user)
+    public function show(Request $request, User $user)
     {
-        $data = $this->users->profile($user);
+        $data = $this->users->profile($user, $request);
 
         return view('admin.users.show', $data);
     }
