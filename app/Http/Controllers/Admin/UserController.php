@@ -23,7 +23,7 @@ class UserController extends Controller
         protected UserSessionService $sessions,
     ) {}
 
-    public function show(Request $request, User $user)
+    public function show(User $user, Request $request)
     {
         $data = $this->users->profile($user, $request);
 

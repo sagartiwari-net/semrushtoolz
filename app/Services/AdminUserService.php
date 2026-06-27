@@ -6,7 +6,6 @@ use App\Models\AffiliateCommission;
 use App\Models\AffiliatePayout;
 use App\Models\Order;
 use App\Models\Plan;
-use App\Models\ReferralClick;
 use App\Models\User;
 use App\Models\UserLoginLog;
 use App\Support\TablePageSize;
@@ -23,8 +22,10 @@ class AdminUserService
         protected AffiliateService $affiliates,
     ) {}
 
-    public function profile(User $user, Request $request): array
+    public function profile(User $user, ?Request $request = null): array
     {
+        $request ??= request();
+
         $user->load(['referrer', 'subscriptions.plan', 'subscriptions.tool']);
 
         $tab = $request->query('tab', 'account');
@@ -36,12 +37,18 @@ class AdminUserService
             ->activeSessions($user->id)
             ->map(fn ($session) => $this->sessions->formatSessionRow($session));
 
-        $uniqueDevicesWeek = UserLoginLog::query()
+        $recentLogsForDevices = UserLoginLog::query()
             ->where('user_id', $user->id)
             ->where('logged_at', '>=', now()->subDays(7))
-            ->whereNotNull('device_fingerprint')
-            ->distinct()
-            ->count('device_fingerprint');
+            ->orderByDesc('logged_at')
+            ->limit(100)
+            ->get();
+
+        $uniqueDevicesWeek = $recentLogsForDevices
+            ->pluck('device_fingerprint')
+            ->filter()
+            ->unique()
+            ->count();
 
         $affiliateStats = $this->affiliates->statsFor($user);
         $referredBy = $user->referrer;
@@ -135,6 +142,7 @@ class AdminUserService
             0,
             TablePageSize::DEFAULT,
             1,
+            ['path' => request()->url(), 'query' => request()->query()],
         );
     }
 
