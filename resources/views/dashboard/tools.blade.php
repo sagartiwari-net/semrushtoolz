@@ -8,6 +8,8 @@
     @php
         $activeCount = collect($tools)->where('active', true)->count();
         $lockedCount = collect($tools)->where('active', false)->count();
+        $activeTools = collect($tools)->where('active', true)->values();
+        $lockedTools = collect($tools)->where('active', false)->values();
     @endphp
 
     <div class="dash-stats-grid-3up">
@@ -22,9 +24,37 @@
         </x-dashboard.stat-card>
     </div>
 
-    <div class="dash-tools-grid">
-        @foreach ($tools as $tool)
-            <x-dashboard.tool-card :tool="$tool" />
-        @endforeach
-    </div>
+    @if ($activeTools->isNotEmpty())
+        <div class="dash-card mb-6">
+            <h2 class="dash-card-title">Your active tools</h2>
+            <div class="dash-tools-grid">
+                @foreach ($activeTools as $tool)
+                    <x-dashboard.tool-card :tool="$tool" />
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    @if ($lockedTools->isNotEmpty())
+        <div class="dash-card">
+            <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <h2 class="dash-card-title mb-1">Subscribe to Unblock</h2>
+                    <p class="text-sm text-ink-muted">Upgrade your plan to unlock more premium tools.</p>
+                </div>
+                <a href="{{ route('dashboard.shop') }}" class="ui-btn-outline text-sm">Browse plans</a>
+            </div>
+            <div class="dash-tools-grid">
+                @foreach ($lockedTools as $tool)
+                    <x-dashboard.tool-card :tool="$tool" />
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    @if ($activeTools->isEmpty() && $lockedTools->isEmpty())
+        <div class="dash-card">
+            <p class="text-sm text-ink-muted">No tools available. <a href="{{ route('dashboard.shop') }}" class="text-accent hover:underline">Browse plans</a></p>
+        </div>
+    @endif
 @endsection
