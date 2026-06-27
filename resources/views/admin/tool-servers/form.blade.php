@@ -17,6 +17,16 @@
             @method('PUT')
         @endif
 
+        @if ($errors->any())
+            <div class="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                <ul class="list-inside list-disc space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <div>
             <label class="ui-label">Tool group</label>
             <select class="ui-input" name="tool_access_group_id" required>

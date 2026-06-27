@@ -158,7 +158,7 @@ class ToolEndpointService
     protected function defaultSecretForGroup(string $groupSlug): string
     {
         return match ($groupSlug) {
-            'ahrefs' => env('TOOL_SECRET_AHREFS', 'prideref_ahrefs_secret_xyz123'),
+            'ahrefs' => env('TOOL_SECRET_AHREFS', 'toolsmandi_ahrefs_secret_xyz123'),
             default => env('TOOL_SECRET_SEMRUSH', 'toolsmandi_recloudsemrush_secret_xyz123'),
         };
     }

@@ -42,21 +42,31 @@ class ToolAccessSeeder extends Seeder
                     $slugKey = $button['slug'] ?? 'direct-'.$order;
                     $endpoint = $endpoints[$slugKey] ?? [];
 
-                    ToolAccessServer::updateOrCreate(
-                        ['slug' => $slugKey],
-                        [
-                            'tool_access_group_id' => $model->id,
-                            'label' => $button['label'],
-                            'type' => $type,
-                            'domain' => $endpoint['domain'] ?? null,
-                            'website_id' => $endpoint['website_id'] ?? null,
-                            'secret_key' => $endpoint['secret_key'] ?? ($type === 'proxy' ? $semrushSecret : null),
-                            'direct_url' => $button['url'] ?? null,
-                            'section_title' => $section['title'] ?? null,
-                            'sort_order' => $order,
-                            'is_active' => true,
-                        ]
-                    );
+                    $defaults = [
+                        'tool_access_group_id' => $model->id,
+                        'label' => $button['label'],
+                        'type' => $type,
+                        'domain' => $endpoint['domain'] ?? null,
+                        'website_id' => $endpoint['website_id'] ?? null,
+                        'secret_key' => $endpoint['secret_key'] ?? ($type === 'proxy' ? $semrushSecret : null),
+                        'direct_url' => $button['url'] ?? null,
+                        'section_title' => $section['title'] ?? null,
+                        'sort_order' => $order,
+                        'is_active' => true,
+                    ];
+
+                    $server = ToolAccessServer::where('slug', $slugKey)->first();
+
+                    if ($server) {
+                        // Keep admin-edited connection settings; only sync layout metadata.
+                        $server->update([
+                            'tool_access_group_id' => $defaults['tool_access_group_id'],
+                            'section_title' => $defaults['section_title'],
+                            'sort_order' => $defaults['sort_order'],
+                        ]);
+                    } else {
+                        ToolAccessServer::create(array_merge(['slug' => $slugKey], $defaults));
+                    }
                 }
             }
         }

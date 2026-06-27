@@ -89,9 +89,9 @@ return [
     'endpoints' => [
         'ahrefs' => [
             'group' => 'ahrefs',
-            'website_id' => 7,
-            'domain' => 'href.prideseotools.com',
-            'secret_key' => env('TOOL_SECRET_AHREFS', 'prideref_ahrefs_secret_xyz123'),
+            'website_id' => (int) env('TOOL_WEBSITE_ID_AHREFS', 7),
+            'domain' => env('TOOL_DOMAIN_AHREFS', 'ct.toolsmandi.com'),
+            'secret_key' => env('TOOL_SECRET_AHREFS', 'toolsmandi_ahrefs_secret_xyz123'),
         ],
         'nnxsm1' => ['group' => 'semrush', 'website_id' => 10, 'domain' => 'nnxsm1.1clkaccess.store', 'secret_key' => $semrushSecret],
         'nnxsm2' => ['group' => 'semrush', 'website_id' => 11, 'domain' => 'nnxsm2.1clkaccess.store', 'secret_key' => $semrushSecret],
