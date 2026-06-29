@@ -40,6 +40,7 @@ use App\Http\Controllers\SubscribeController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\BuyahrefWebhookController;
 use App\Http\Controllers\PayPalWebhookController;
+use App\Http\Controllers\PublicArticleController;
 use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Admin\SecurityController;
@@ -58,10 +59,13 @@ Route::get('/legal/{slug}', [LegalController::class, 'show'])->name('legal.show'
 Route::redirect('/semrush-group-buy', '/tools/semrush-group-buy', 301);
 Route::redirect('/ahrefs-group-buy', '/tools/ahrefs-group-buy', 301);
 
+Route::get('/tools/semrush-group-buy', [PublicArticleController::class, 'semrush'])->name('tools.semrush');
+Route::get('/tools/ahrefs-group-buy', [PublicArticleController::class, 'ahrefs'])->name('tools.ahrefs');
+
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [RobotsController::class, 'index'])->name('robots');
 
-// Article pages are registered dynamically from DB in AppServiceProvider
+// Additional article pages are registered from DB after routes load (AppServiceProvider).
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthPageController::class, 'login'])->name('login');

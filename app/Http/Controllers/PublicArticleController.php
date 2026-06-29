@@ -19,4 +19,14 @@ class PublicArticleController extends Controller
 
         return $this->pages->render($article);
     }
+
+    public function semrush()
+    {
+        return $this->show('tools/semrush-group-buy');
+    }
+
+    public function ahrefs()
+    {
+        return $this->show('tools/ahrefs-group-buy');
+    }
 }

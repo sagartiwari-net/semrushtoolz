@@ -18,10 +18,18 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        if ($this->app->runningInConsole()) {
-            return;
-        }
+        $this->app->booted(function () {
+            if ($this->app->runningInConsole()) {
+                return;
+            }
 
+            $this->registerArticleRoutes();
+            $this->registerViewComposers();
+        });
+    }
+
+    protected function registerArticleRoutes(): void
+    {
         try {
             Article::with('tool')->where('is_published', true)->each(function (Article $article) {
                 $path = trim($article->url_path, '/');
@@ -29,17 +37,28 @@ class AppServiceProvider extends ServiceProvider
                     ? 'tools.'.$article->tool->slug
                     : 'pages.'.str_replace(['/', '-'], '_', $path);
 
+                if (Route::has($routeName)) {
+                    return;
+                }
+
                 Route::get('/'.$path, function () use ($path) {
                     return app(PublicArticleController::class)->show($path);
                 })->name($routeName);
             });
+        } catch (\Throwable) {
+            // DB may not be ready during initial install
+        }
+    }
 
+    protected function registerViewComposers(): void
+    {
+        try {
             View::composer(['components.public-footer'], function ($view) {
                 $view->with('footerArticles', Article::where('is_published', true)->orderBy('title')->get(['title', 'url_path', 'breadcrumb_label', 'tool_id']));
                 $view->with('footerLegalPages', LegalPage::where('is_published', true)->orderBy('sort_order')->get());
             });
         } catch (\Throwable) {
-            // DB may not be ready during initial install
+            //
         }
     }
 }
