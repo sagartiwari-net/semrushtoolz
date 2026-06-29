@@ -188,13 +188,16 @@
 @endsection
 
 @push('schema')
-<script type="application/ld+json">{!! json_encode([
-    '@context' => 'https://schema.org',
-    '@type' => 'WebPage',
-    'name' => 'Semrush Login & Ahrefs Login — Semrushtoolz',
-    'description' => 'Login to Semrushtoolz dashboard for Semrush group buy and Ahrefs group buy access.',
-    'url' => route('login'),
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@php
+    $loginSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebPage',
+        'name' => 'Semrush Login & Ahrefs Login — Semrushtoolz',
+        'description' => 'Login to Semrushtoolz dashboard for Semrush group buy and Ahrefs group buy access.',
+        'url' => route('login'),
+    ];
+@endphp
+<script type="application/ld+json">{!! json_encode($loginSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endpush
 
 @section('footer_link')

@@ -14,7 +14,7 @@
     <form class="relative mt-8 space-y-5" action="{{ route('register.submit') }}" method="POST">
         @csrf
 
-        @if ($errors->any())
+        @if ($errors?->any())
             <div class="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
                 <ul class="list-inside list-disc space-y-1">
                     @foreach ($errors->all() as $error)
@@ -152,13 +152,16 @@
 @endsection
 
 @push('schema')
-<script type="application/ld+json">{!! json_encode([
-    '@context' => 'https://schema.org',
-    '@type' => 'WebPage',
-    'name' => 'Sign Up — Buy Semrush & Ahrefs Group Buy',
-    'description' => 'Create your Semrushtoolz account to buy Semrush and Ahrefs at cheap price.',
-    'url' => route('register'),
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@php
+    $registerSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebPage',
+        'name' => 'Sign Up — Buy Semrush & Ahrefs Group Buy',
+        'description' => 'Create your Semrushtoolz account to buy Semrush and Ahrefs at cheap price.',
+        'url' => route('register'),
+    ];
+@endphp
+<script type="application/ld+json">{!! json_encode($registerSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endpush
 
 @section('footer_link')
