@@ -136,4 +136,17 @@ return [
         'secondary_label' => 'Compare Plans',
         'secondary_url' => '#plans',
     ],
+
+    'section_visibility' => [
+        'ahrefs_plans' => true,
+        'semrush_block' => true,
+        'ahrefs_block' => true,
+        'combo_block' => true,
+        'how_it_works' => true,
+        'features' => true,
+        'faq' => true,
+        'cta' => true,
+    ],
+
+    'custom_sections' => [],
 ];

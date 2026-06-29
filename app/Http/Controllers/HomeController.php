@@ -25,6 +25,7 @@ class HomeController extends Controller
 
         return view('pages.home', [
             'homepage' => $content,
+            'customSections' => $this->homepage->sortedCustomSections($content),
             'comboTags' => $this->homepage->comboTags($content['combo_block']),
             'semrushPlans' => PricingService::homepageSemrushPlans(),
             'trialPlan' => PricingService::trialPlanForHomepage(),

@@ -10,6 +10,7 @@
         ['label' => 'Tool Groups', 'route' => 'admin.tool-groups.index', 'icon' => 'grid', 'active' => 'admin.tool-groups.*'],
         ['label' => 'Tool Pages', 'route' => 'admin.articles.index', 'icon' => 'ticket', 'active' => 'admin.articles.*'],
         ['label' => 'Homepage', 'route' => 'admin.homepage.edit', 'icon' => 'store', 'active' => 'admin.homepage.*'],
+        ['label' => 'SEO & Sitemap', 'route' => 'admin.seo.edit', 'icon' => 'chart', 'active' => 'admin.seo.*'],
         ['label' => 'Legal Pages', 'route' => 'admin.legal-pages.index', 'icon' => 'ticket', 'active' => 'admin.legal-pages.*'],
         ['label' => 'Orders', 'route' => 'admin.orders', 'icon' => 'receipt', 'active' => 'admin.orders*'],
         ['label' => 'Payments', 'route' => 'admin.payments', 'icon' => 'credit', 'active' => 'admin.payments'],

@@ -11,8 +11,20 @@
             'hero' => 'Hero & Stats',
             'plans' => 'Plans Sections',
             'content' => 'SEO Content',
+            'sections' => 'Sections',
             'faq' => 'FAQ & CTA',
         ];
+        $sectionLabels = [
+            'ahrefs_plans' => 'Ahrefs plans grid',
+            'semrush_block' => 'Semrush SEO content block',
+            'ahrefs_block' => 'Ahrefs SEO content block',
+            'combo_block' => 'Combo / keywords section',
+            'how_it_works' => 'How it works',
+            'features' => 'Why Semrushtoolz features',
+            'faq' => 'FAQ accordion',
+            'cta' => 'Bottom CTA banner',
+        ];
+        $customSections = $hp['custom_sections'] ?? [];
     @endphp
 
     <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
@@ -173,6 +185,84 @@
                     </div>
             </div>
 
+            <div @class(['space-y-6 max-w-4xl', 'hidden' => $tab !== 'sections'])>
+                <div class="dash-card space-y-4">
+                    <h2 class="font-semibold text-ink">Show / hide built-in sections</h2>
+                    <p class="text-xs text-ink-muted">Hero and main Semrush plans section always stay visible. Uncheck a section to hide it from the homepage without deleting its content.</p>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        @foreach ($sectionLabels as $key => $label)
+                            @php $on = (bool) ($hp['section_visibility'][$key] ?? true); @endphp
+                            <label class="flex items-center gap-3 rounded-lg border border-line px-4 py-3 text-sm">
+                                <input type="hidden" name="section_{{ $key }}" value="0">
+                                <input type="checkbox" name="section_{{ $key }}" value="1" class="rounded" @checked((string) old('section_'.$key, $on ? '1' : '0') === '1')>
+                                <span>{{ $label }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="dash-card space-y-4" id="custom-sections">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h2 class="font-semibold text-ink">Custom sections</h2>
+                            <p class="text-xs text-ink-muted">Add your own blocks (testimonials, trust badges, etc.). Shown after Features, before FAQ.</p>
+                        </div>
+                        <button type="button" class="ui-btn-outline text-sm" id="add-custom-section">+ Add section</button>
+                    </div>
+
+                    <div id="custom-section-list" class="space-y-4">
+                        @php $customCount = max(1, count($customSections)); @endphp
+                        @for ($i = 0; $i < $customCount; $i++)
+                            @php $cs = $customSections[$i] ?? []; @endphp
+                            <div class="custom-section-row rounded-xl border border-line p-4 space-y-3" data-index="{{ $i }}">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <label class="flex items-center gap-2 text-sm font-medium">
+                                        <input type="hidden" name="custom_enabled[{{ $i }}]" value="0">
+                                        <input type="checkbox" name="custom_enabled[{{ $i }}]" value="1" class="rounded" @checked(old('custom_enabled.'.$i, $cs['enabled'] ?? true))>
+                                        Enabled
+                                    </label>
+                                    <button type="button" class="text-xs text-danger hover:underline remove-custom-section">Remove</button>
+                                </div>
+                                <div class="grid gap-3 sm:grid-cols-3">
+                                    <div><label class="ui-label">Sort order</label><input class="ui-input" name="custom_sort[]" type="number" value="{{ old('custom_sort.'.$i, $cs['sort_order'] ?? $i) }}"></div>
+                                    <div><label class="ui-label">Section ID (anchor)</label><input class="ui-input" name="custom_id[]" value="{{ old('custom_id.'.$i, $cs['id'] ?? '') }}" placeholder="my-section"></div>
+                                    <div>
+                                        <label class="ui-label">Layout</label>
+                                        <select class="ui-input" name="custom_layout[]">
+                                            @foreach (['centered' => 'Centered', 'two_column' => 'Two column', 'cta_banner' => 'CTA banner'] as $val => $lbl)
+                                                <option value="{{ $val }}" @selected(old('custom_layout.'.$i, $cs['layout'] ?? 'centered') === $val)>{{ $lbl }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid gap-3 sm:grid-cols-2">
+                                    <div><label class="ui-label">Heading</label><input class="ui-input" name="custom_heading[]" value="{{ old('custom_heading.'.$i, $cs['heading'] ?? '') }}"></div>
+                                    <div><label class="ui-label">Subheading</label><input class="ui-input" name="custom_subheading[]" value="{{ old('custom_subheading.'.$i, $cs['subheading'] ?? '') }}"></div>
+                                </div>
+                                <div><label class="ui-label">Body (HTML)</label><textarea class="ui-input min-h-[80px]" name="custom_body[]" rows="4">{{ old('custom_body.'.$i, $cs['body_html'] ?? '') }}</textarea></div>
+                                <div><label class="ui-label">Bullet points (one per line)</label><textarea class="ui-input" name="custom_bullets[]" rows="3">{{ old('custom_bullets.'.$i, is_array($cs['bullets'] ?? null) ? implode("\n", $cs['bullets']) : '') }}</textarea></div>
+                                <div class="grid gap-3 sm:grid-cols-2">
+                                    <div><label class="ui-label">Image URL</label><input class="ui-input" name="custom_image[]" value="{{ old('custom_image.'.$i, $cs['image_url'] ?? '') }}"></div>
+                                    <div><label class="ui-label">Image alt</label><input class="ui-input" name="custom_image_alt[]" value="{{ old('custom_image_alt.'.$i, $cs['image_alt'] ?? '') }}"></div>
+                                </div>
+                                <div class="grid gap-3 sm:grid-cols-3">
+                                    <div><label class="ui-label">CTA label</label><input class="ui-input" name="custom_cta_label[]" value="{{ old('custom_cta_label.'.$i, $cs['cta_label'] ?? '') }}"></div>
+                                    <div><label class="ui-label">CTA URL</label><input class="ui-input" name="custom_cta_url[]" value="{{ old('custom_cta_url.'.$i, $cs['cta_url'] ?? '') }}"></div>
+                                    <div>
+                                        <label class="ui-label">Background</label>
+                                        <select class="ui-input" name="custom_background[]">
+                                            @foreach (['white' => 'White', 'gray' => 'Light gray', 'dark' => 'Dark'] as $val => $lbl)
+                                                <option value="{{ $val }}" @selected(old('custom_background.'.$i, $cs['background'] ?? 'white') === $val)>{{ $lbl }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        @endfor
+                    </div>
+                </div>
+            </div>
+
             <div @class(['space-y-6 max-w-4xl', 'hidden' => $tab !== 'faq'])>
                     <div class="dash-card space-y-4">
                         <h2 class="font-semibold text-ink">FAQ section</h2>
@@ -207,4 +297,33 @@
             <a href="{{ route('home') }}" target="_blank" class="ui-btn-outline">Preview</a>
         </div>
     </form>
+
+    @push('scripts')
+    <script>
+        document.getElementById('add-custom-section')?.addEventListener('click', () => {
+            const list = document.getElementById('custom-section-list');
+            const rows = list.querySelectorAll('.custom-section-row');
+            const i = rows.length;
+            const tpl = rows[rows.length - 1]?.cloneNode(true);
+            if (!tpl) return;
+            tpl.dataset.index = i;
+            tpl.querySelectorAll('[name]').forEach((el) => {
+                el.name = el.name.replace(/\[\d+\]/, '[' + i + ']').replace(/\[\]/, '[]');
+                if (el.type === 'checkbox') { el.checked = true; }
+                else if (el.tagName === 'SELECT') { el.selectedIndex = 0; }
+                else { el.value = ''; }
+            });
+            list.appendChild(tpl);
+        });
+        document.getElementById('custom-section-list')?.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('remove-custom-section')) return;
+            const rows = document.querySelectorAll('.custom-section-row');
+            if (rows.length <= 1) {
+                e.target.closest('.custom-section-row').querySelectorAll('input:not([type=hidden]), textarea, select').forEach(el => { el.value = ''; });
+                return;
+            }
+            e.target.closest('.custom-section-row').remove();
+        });
+    </script>
+    @endpush
 @endsection

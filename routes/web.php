@@ -14,7 +14,7 @@ use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
-use App\Http\Controllers\Admin\SecurityController;
+use App\Http\Controllers\Admin\SeoController as AdminSeoController;
 use App\Http\Controllers\Admin\SessionController as AdminSessionController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
@@ -40,7 +40,9 @@ use App\Http\Controllers\SubscribeController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\BuyahrefWebhookController;
 use App\Http\Controllers\PayPalWebhookController;
+use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\Admin\SecurityController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/webhooks/paypal', PayPalWebhookController::class)->name('webhooks.paypal');
@@ -57,6 +59,7 @@ Route::redirect('/semrush-group-buy', '/tools/semrush-group-buy', 301);
 Route::redirect('/ahrefs-group-buy', '/tools/ahrefs-group-buy', 301);
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/robots.txt', [RobotsController::class, 'index'])->name('robots');
 
 // Article pages are registered dynamically from DB in AppServiceProvider
 
@@ -263,6 +266,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/homepage', [HomepageController::class, 'edit'])->name('homepage.edit');
         Route::put('/homepage', [HomepageController::class, 'update'])->name('homepage.update');
         Route::post('/homepage/reset', [HomepageController::class, 'reset'])->name('homepage.reset');
+
+        Route::get('/seo', [AdminSeoController::class, 'edit'])->name('seo.edit');
+        Route::put('/seo/robots', [AdminSeoController::class, 'updateRobots'])->name('seo.robots');
+        Route::post('/seo/robots/reset', [AdminSeoController::class, 'resetRobots'])->name('seo.robots.reset');
+        Route::put('/seo/sitemap-extras', [AdminSeoController::class, 'updateSitemapExtras'])->name('seo.sitemap-extras');
 
         Route::get('/settings', [AdminSettingsController::class, 'edit'])->name('settings');
         Route::put('/settings/general', [AdminSettingsController::class, 'updateGeneral'])->name('settings.general');

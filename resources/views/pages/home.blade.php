@@ -15,6 +15,7 @@
     $ctaSection = $homepage['cta'];
     $stats = $homepage['stats'];
     $faqs = $faqSection['items'];
+    $visibility = $homepage['section_visibility'] ?? [];
 @endphp
 
 @section('seo_meta')
@@ -157,6 +158,7 @@
         </div>
     </section>
 
+    @if ($visibility['ahrefs_plans'] ?? true)
     <section id="ahrefs-plans" class="border-t border-line bg-white py-20">
         <div class="plans-section">
             <div class="text-center">
@@ -185,7 +187,9 @@
             @endif
         </div>
     </section>
+    @endif
 
+    @if ($visibility['semrush_block'] ?? true)
     <section id="semrush-group-buy" class="border-t border-line bg-white py-20">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="grid items-center gap-12 lg:grid-cols-2">
@@ -217,7 +221,9 @@
             </div>
         </div>
     </section>
+    @endif
 
+    @if ($visibility['ahrefs_block'] ?? true)
     <section id="ahrefs-group-buy" class="py-20">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="grid items-center gap-12 lg:grid-cols-2">
@@ -249,7 +255,9 @@
             </div>
         </div>
     </section>
+    @endif
 
+    @if ($visibility['combo_block'] ?? true)
     <section id="group-buy-seo-tools" class="border-y border-line bg-white py-20">
         <div class="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
             <h2 class="section-heading">{{ $comboBlock['heading'] }}</h2>
@@ -265,7 +273,9 @@
             @endif
         </div>
     </section>
+    @endif
 
+    @if ($visibility['how_it_works'] ?? true)
     <section id="how-it-works" class="border-y border-line bg-white py-20">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center">
@@ -293,7 +303,9 @@
             </div>
         </div>
     </section>
+    @endif
 
+    @if ($visibility['features'] ?? true)
     <section class="py-20">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="ui-card overflow-hidden">
@@ -348,7 +360,13 @@
             </div>
         </div>
     </section>
+    @endif
 
+    @foreach ($customSections as $section)
+        <x-home-custom-section :section="$section" />
+    @endforeach
+
+    @if ($visibility['faq'] ?? true)
     <section id="faq" class="border-t border-line bg-white py-20">
         <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <div class="text-center">
@@ -369,7 +387,9 @@
             </div>
         </div>
     </section>
+    @endif
 
+    @if ($visibility['cta'] ?? true)
     <section class="py-20">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="relative overflow-hidden rounded-3xl bg-ink px-8 py-14 text-center sm:px-16">
@@ -391,4 +411,5 @@
             </div>
         </div>
     </section>
+    @endif
 @endsection

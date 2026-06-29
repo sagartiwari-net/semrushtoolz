@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\SitemapService;
 use Illuminate\Http\Response;
 
-class SitemapController extends Controller
+class RobotsController extends Controller
 {
     public function __construct(
         protected SitemapService $sitemap,
@@ -13,7 +13,7 @@ class SitemapController extends Controller
 
     public function index(): Response
     {
-        return response($this->sitemap->toXml(), 200)
-            ->header('Content-Type', 'application/xml');
+        return response($this->sitemap->robotsTxt(), 200)
+            ->header('Content-Type', 'text/plain; charset=UTF-8');
     }
 }

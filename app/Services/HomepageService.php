@@ -139,7 +139,32 @@ class HomepageService
             'secondary_url' => trim((string) ($input['cta_secondary_url'] ?? '')),
         ];
 
+        $visibility = [];
+        foreach (array_keys(config('homepage.section_visibility', [])) as $key) {
+            $visibility[$key] = (string) ($input['section_'.$key] ?? '0') === '1';
+        }
+        $config['section_visibility'] = $visibility;
+
+        $config['custom_sections'] = $this->normalizeCustomSections($input);
+
         return $config;
+    }
+
+    public function isSectionVisible(array $config, string $key): bool
+    {
+        return (bool) ($config['section_visibility'][$key] ?? true);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function sortedCustomSections(array $config): array
+    {
+        return collect($config['custom_sections'] ?? [])
+            ->filter(fn ($section) => (bool) ($section['enabled'] ?? true) && (filled($section['heading'] ?? null) || filled($section['body_html'] ?? null)))
+            ->sortBy(fn ($section) => (int) ($section['sort_order'] ?? 0))
+            ->values()
+            ->all();
     }
 
     public function resolveCtaHtml(string $html): string
@@ -233,5 +258,42 @@ class HomepageService
         }
 
         return array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', (string) $value) ?: [])));
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<int, array<string, mixed>>
+     */
+    protected function normalizeCustomSections(array $input): array
+    {
+        $sections = [];
+        $headings = $input['custom_heading'] ?? [];
+        $count = is_array($headings) ? count($headings) : 0;
+
+        for ($i = 0; $i < $count; $i++) {
+            $heading = trim((string) ($headings[$i] ?? ''));
+
+            if ($heading === '' && trim((string) ($input['custom_body'][$i] ?? '')) === '') {
+                continue;
+            }
+
+            $sections[] = [
+                'id' => trim((string) ($input['custom_id'][$i] ?? '')) ?: 'section-'.($i + 1),
+                'enabled' => (string) ($input['custom_enabled'][$i] ?? '0') === '1',
+                'sort_order' => (int) ($input['custom_sort'][$i] ?? $i),
+                'layout' => trim((string) ($input['custom_layout'][$i] ?? 'centered')) ?: 'centered',
+                'heading' => $heading,
+                'subheading' => trim((string) ($input['custom_subheading'][$i] ?? '')),
+                'body_html' => (string) ($input['custom_body'][$i] ?? ''),
+                'image_url' => trim((string) ($input['custom_image'][$i] ?? '')),
+                'image_alt' => trim((string) ($input['custom_image_alt'][$i] ?? '')),
+                'bullets' => $this->linesToList($input['custom_bullets'][$i] ?? ''),
+                'cta_label' => trim((string) ($input['custom_cta_label'][$i] ?? '')),
+                'cta_url' => trim((string) ($input['custom_cta_url'][$i] ?? '')),
+                'background' => trim((string) ($input['custom_background'][$i] ?? 'white')) ?: 'white',
+            ];
+        }
+
+        return $sections;
     }
 }
