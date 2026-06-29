@@ -14,10 +14,63 @@ class HomepageService
         $stored = json_decode((string) SiteSetting::get(self::SETTING_KEY, ''), true);
 
         if (! is_array($stored) || $stored === []) {
-            return $defaults;
+            return $this->normalizeConfig($defaults);
         }
 
-        return array_replace_recursive($defaults, $stored);
+        return $this->normalizeConfig(array_replace_recursive($defaults, $stored));
+    }
+
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
+    protected function normalizeConfig(array $config): array
+    {
+        $defaults = config('homepage', []);
+
+        $config['stats'] = $this->ensureList($config['stats'] ?? null);
+        $config['plan_notes'] = $this->ensureList($config['plan_notes'] ?? null);
+        $config['custom_sections'] = collect($this->ensureList($config['custom_sections'] ?? null))
+            ->filter(fn ($section) => is_array($section))
+            ->values()
+            ->all();
+
+        $visibilityDefaults = is_array($defaults['section_visibility'] ?? null)
+            ? $defaults['section_visibility']
+            : [];
+        $visibilityStored = is_array($config['section_visibility'] ?? null)
+            ? $config['section_visibility']
+            : [];
+        $config['section_visibility'] = array_merge($visibilityDefaults, $visibilityStored);
+
+        foreach (['how_it_works', 'features', 'faq'] as $sectionKey) {
+            if (! is_array($config[$sectionKey] ?? null)) {
+                $config[$sectionKey] = is_array($defaults[$sectionKey] ?? null)
+                    ? $defaults[$sectionKey]
+                    : [];
+            }
+        }
+
+        $config['how_it_works']['steps'] = $this->ensureList($config['how_it_works']['steps'] ?? null);
+        $config['features']['items'] = $this->ensureList($config['features']['items'] ?? null);
+        $config['faq']['items'] = $this->ensureList($config['faq']['items'] ?? null);
+
+        $tags = $config['combo_block']['tags'] ?? '';
+        if (! is_string($tags) && ! is_array($tags)) {
+            $config['combo_block']['tags'] = is_array($defaults['combo_block']['tags'] ?? null)
+                ? $defaults['combo_block']['tags']
+                : [];
+        }
+
+        return $config;
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    protected function ensureList(mixed $value): array
+    {
+        return is_array($value) ? array_values($value) : [];
     }
 
     public function save(array $content): void

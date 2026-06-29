@@ -24,7 +24,7 @@
             'faq' => 'FAQ accordion',
             'cta' => 'Bottom CTA banner',
         ];
-        $customSections = $hp['custom_sections'] ?? [];
+        $customSections = is_array($hp['custom_sections'] ?? null) ? array_values($hp['custom_sections']) : [];
     @endphp
 
     <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
@@ -44,7 +44,7 @@
     @if (session('success'))
         <div class="mb-4 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">{{ session('success') }}</div>
     @endif
-    @if ($errors->any())
+    @if ($errors?->any())
         <div class="mb-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
             <ul class="list-disc pl-4">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
         </div>
@@ -298,7 +298,6 @@
         </div>
     </form>
 
-    @push('scripts')
     <script>
         document.getElementById('add-custom-section')?.addEventListener('click', () => {
             const list = document.getElementById('custom-section-list');
@@ -325,5 +324,4 @@
             e.target.closest('.custom-section-row').remove();
         });
     </script>
-    @endpush
 @endsection
