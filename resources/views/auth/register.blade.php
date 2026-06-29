@@ -90,9 +90,9 @@
     <p class="mt-6 text-center text-xs text-ink-muted">
         <a href="{{ url('/#plans') }}" class="text-accent hover:underline">View Plans</a>
         ·
-        <a href="{{ route('tools.semrush') }}" class="text-accent hover:underline">Semrush Group Buy</a>
+        <a href="{{ url('/tools/semrush-group-buy') }}" class="text-accent hover:underline">Semrush Group Buy</a>
         ·
-        <a href="{{ route('tools.ahrefs') }}" class="text-accent hover:underline">Ahrefs Group Buy</a>
+        <a href="{{ url('/tools/ahrefs-group-buy') }}" class="text-accent hover:underline">Ahrefs Group Buy</a>
     </p>
 @endsection
 
