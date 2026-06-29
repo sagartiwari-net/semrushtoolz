@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\EmailPresetController;
 use App\Http\Controllers\Admin\EmailSettingsController;
 use App\Http\Controllers\Admin\ExtensionSettingsController;
+use App\Http\Controllers\Admin\HomepageController;
 use App\Http\Controllers\Admin\LegalPageController;
 use App\Http\Controllers\Admin\PaymentIntegrationController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
@@ -259,6 +260,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/coupons/{coupon}/edit', [CouponController::class, 'edit'])->name('coupons.edit');
         Route::put('/coupons/{coupon}', [CouponController::class, 'update'])->name('coupons.update');
         Route::post('/coupons/{coupon}/toggle', [CouponController::class, 'toggle'])->name('coupons.toggle');
+        Route::get('/homepage', [HomepageController::class, 'edit'])->name('homepage.edit');
+        Route::put('/homepage', [HomepageController::class, 'update'])->name('homepage.update');
+        Route::post('/homepage/reset', [HomepageController::class, 'reset'])->name('homepage.reset');
+
         Route::get('/settings', [AdminSettingsController::class, 'edit'])->name('settings');
         Route::put('/settings/general', [AdminSettingsController::class, 'updateGeneral'])->name('settings.general');
         Route::put('/settings/affiliate', [AdminSettingsController::class, 'updateAffiliate'])->name('settings.affiliate');
