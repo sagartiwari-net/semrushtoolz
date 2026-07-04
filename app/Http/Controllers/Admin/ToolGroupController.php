@@ -21,7 +21,7 @@ class ToolGroupController extends Controller
     {
         return view('admin.tool-groups.form', [
             'group' => new ToolAccessGroup(['is_active' => true]),
-            'tools' => Tool::where('is_active', true)->orderBy('sort_order')->get(),
+            'tools' => Tool::orderByDesc('is_active')->orderBy('sort_order')->get(),
         ]);
     }
 
@@ -41,7 +41,7 @@ class ToolGroupController extends Controller
     {
         return view('admin.tool-groups.form', [
             'group' => $toolGroup,
-            'tools' => Tool::where('is_active', true)->orderBy('sort_order')->get(),
+            'tools' => Tool::orderByDesc('is_active')->orderBy('sort_order')->get(),
         ]);
     }
 

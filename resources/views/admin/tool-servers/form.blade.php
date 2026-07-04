@@ -28,14 +28,27 @@
         @endif
 
         <div>
-            <label class="ui-label">Tool group</label>
-            <select class="ui-input" name="tool_access_group_id" required>
-                @foreach ($groups as $group)
-                    <option value="{{ $group->id }}" @selected(old('tool_access_group_id', $server->tool_access_group_id) == $group->id)>
-                        {{ $group->title }} ({{ $group->slug }})
-                    </option>
-                @endforeach
-            </select>
+            <label class="ui-label">Tool group (hub)</label>
+            @if ($groups->isEmpty())
+                <div class="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                    No tool groups yet. Create one first in
+                    <a href="{{ route('admin.tool-groups.create') }}" class="font-semibold underline">Tool Groups</a>
+                    (e.g. Bonus Tools), then come back here to add servers.
+                </div>
+            @else
+                <select class="ui-input" name="tool_access_group_id" required>
+                    @foreach ($groups as $group)
+                        <option value="{{ $group->id }}" @selected(old('tool_access_group_id', $server->tool_access_group_id) == $group->id)>
+                            {{ $group->title }} ({{ $group->slug }}){{ $group->is_active ? '' : ' — Inactive' }}
+                        </option>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-xs text-ink-muted">
+                    Missing your group? Create it under
+                    <a href="{{ route('admin.tool-groups.index') }}" class="text-accent hover:underline">Tool Groups</a>
+                    (Tools list ≠ Tool Groups).
+                </p>
+            @endif
         </div>
 
         <div class="grid gap-5 sm:grid-cols-2">
