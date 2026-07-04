@@ -77,7 +77,20 @@
                 </div>
                 <div><label class="ui-label">Shop badge</label><input class="ui-input" name="shop_badge" value="{{ old('shop_badge', $tool->shop_badge) }}" placeholder="Popular"></div>
             </div>
-            <div><label class="ui-label">Grants access to tool slug</label><input class="ui-input font-mono" name="grants_tool_slug" value="{{ old('grants_tool_slug', $tool->grants_tool_slug) }}" placeholder="ahrefs (for tiers)"><p class="mt-1 text-xs text-ink-muted">Leave empty if this tool grants its own access. Use for Ahrefs Plan 1–4 → grants <code>ahrefs</code></p></div>
+            <div>
+                <label class="ui-label">Grants access to tool slug (single)</label>
+                <input class="ui-input font-mono" name="grants_tool_slug" value="{{ old('grants_tool_slug', $tool->grants_tool_slug) }}" placeholder="ahrefs">
+                <p class="mt-1 text-xs text-ink-muted">For tiers: Ahrefs Plan 1–4 → grants <code>ahrefs</code>. Leave empty for normal tools.</p>
+            </div>
+            <div>
+                <label class="ui-label">Package unlocks these tools (one slug per line)</label>
+                <textarea class="ui-input min-h-[100px] font-mono text-sm" name="grants_tool_slugs_text" placeholder="ubersuggest&#10;similarweb&#10;spyfu&#10;kwfinder">{{ old('grants_tool_slugs_text', implode("\n", $tool->grants_tool_slugs ?? [])) }}</textarea>
+                <p class="mt-1 text-xs text-ink-muted">
+                    For <strong>Bonus Tools</strong> package: list each child tool slug. Plan only needs this package checked;
+                    My Tools shows each child as its own card (with its own access page + multiple buttons).
+                    This package tool itself is hidden from My Tools.
+                </p>
+            </div>
             <div><label class="ui-label">Shop features (one per line)</label><textarea class="ui-input min-h-[80px]" name="shop_features_text">{{ old('shop_features_text', implode("\n", $tool->shop_features ?? [])) }}</textarea></div>
         </div>
 

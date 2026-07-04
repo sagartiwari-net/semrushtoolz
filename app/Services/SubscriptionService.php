@@ -67,11 +67,15 @@ class SubscriptionService
         }
 
         if ($sub->plan_id && $sub->plan) {
-            return $sub->plan->tools->pluck('slug')->all();
+            return $sub->plan->tools
+                ->flatMap(fn (Tool $tool) => $tool->unlockedSlugs())
+                ->unique()
+                ->values()
+                ->all();
         }
 
         if ($sub->tool_id && $sub->tool) {
-            return [$sub->tool->grantSlug()];
+            return $sub->tool->unlockedSlugs();
         }
 
         return [];
@@ -84,6 +88,8 @@ class SubscriptionService
         return Tool::where('is_active', true)
             ->orderBy('sort_order')
             ->get()
+            // Package parents (Bonus Tools) unlock children — show children as separate cards only.
+            ->reject(fn (Tool $tool) => $tool->isPackageGrant())
             ->map(function (Tool $tool) use ($grantedSlugs, $user) {
                 $toolAccess = app(ToolAccessService::class);
 
@@ -94,7 +100,7 @@ class SubscriptionService
                     'logo' => $tool->logo_url,
                     'status' => $tool->access_type,
                     'access_type' => $tool->access_type,
-                    'active' => in_array($tool->slug, $grantedSlugs),
+                    'active' => in_array($tool->slug, $grantedSlugs, true),
                     'featured' => $tool->slug === 'semrush',
                     'is_extension' => $tool->access_type === Tool::ACCESS_EXTENSION,
                     'seats' => $tool->isCloud() ? ($toolAccess->seatLabel($tool->slug) ?? '—') : null,
@@ -102,6 +108,7 @@ class SubscriptionService
                     'session' => null,
                 ];
             })
+            ->values()
             ->all();
     }
 

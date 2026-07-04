@@ -125,6 +125,15 @@ class ToolCatalogController extends Controller
             unset($data['shop_features_text']);
         }
 
+        if (array_key_exists('grants_tool_slugs_text', $data)) {
+            $data['grants_tool_slugs'] = collect(preg_split('/[\r\n,]+/', (string) $data['grants_tool_slugs_text']))
+                ->map(fn ($line) => trim($line))
+                ->filter()
+                ->values()
+                ->all();
+            unset($data['grants_tool_slugs_text']);
+        }
+
         if (! empty($data['prices_json'])) {
             $data['prices'] = json_decode($data['prices_json'], true) ?: null;
         }

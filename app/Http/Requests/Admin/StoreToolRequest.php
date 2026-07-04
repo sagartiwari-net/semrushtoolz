@@ -38,6 +38,7 @@ class StoreToolRequest extends FormRequest
             'category' => ['nullable', 'string', Rule::in(array_keys(Tool::categories()))],
             'shop_badge' => ['nullable', 'string', 'max:40'],
             'grants_tool_slug' => ['nullable', 'string', 'max:60'],
+            'grants_tool_slugs_text' => ['nullable', 'string', 'max:2000'],
             'shop_features_text' => ['nullable', 'string'],
             'credentials' => ['nullable', 'array'],
         ];

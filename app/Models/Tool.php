@@ -46,7 +46,7 @@ class Tool extends Model
         'price_inr', 'price_usd', 'prices',
         'whatsapp_number', 'whatsapp_message', 'official_url', 'extension_download_url',
         'is_extension', 'sort_order', 'is_active',
-        'show_in_shop', 'shop_features', 'category', 'grants_tool_slug', 'shop_badge',
+        'show_in_shop', 'shop_features', 'category', 'grants_tool_slug', 'grants_tool_slugs', 'shop_badge',
         'seo_title', 'seo_description', 'seo_keywords',
     ];
 
@@ -55,6 +55,7 @@ class Tool extends Model
         return [
             'prices' => 'array',
             'shop_features' => 'array',
+            'grants_tool_slugs' => 'array',
             'is_extension' => 'boolean',
             'is_active' => 'boolean',
             'show_in_shop' => 'boolean',
@@ -119,6 +120,47 @@ class Tool extends Model
     public function grantSlug(): string
     {
         return $this->grants_tool_slug ?: $this->slug;
+    }
+
+    /**
+     * Extra tool slugs unlocked when this package tool is on a plan (Bonus Tools → children).
+     *
+     * @return array<int, string>
+     */
+    public function grantsToolSlugs(): array
+    {
+        return collect($this->grants_tool_slugs ?? [])
+            ->map(fn ($slug) => trim((string) $slug))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    /** Package parent (e.g. Bonus Tools) — unlocks children; not shown as its own My Tools card. */
+    public function isPackageGrant(): bool
+    {
+        return $this->grantsToolSlugs() !== [];
+    }
+
+    /**
+     * All slugs this tool unlocks for the subscriber.
+     *
+     * @return array<int, string>
+     */
+    public function unlockedSlugs(): array
+    {
+        $slugs = [$this->slug];
+
+        $single = trim((string) ($this->grants_tool_slug ?? ''));
+        if ($single !== '' && $single !== $this->slug) {
+            $slugs[] = $single;
+        }
+
+        foreach ($this->grantsToolSlugs() as $slug) {
+            $slugs[] = $slug;
+        }
+
+        return array_values(array_unique($slugs));
     }
 
     public function thumbnailUrl(): ?string
