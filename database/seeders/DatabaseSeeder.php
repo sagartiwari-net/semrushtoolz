@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             ToolSeeder::class,
             PlanSeeder::class,
             ToolAccessSeeder::class,
+            BonusToolsSeeder::class,
             ArticleSeeder::class,
             LegalPageSeeder::class,
             SiteSettingSeeder::class,
