@@ -29,8 +29,7 @@ class BonusToolsSeeder extends Seeder
             ['slug' => 'grammarly', 'name' => 'Grammarly', 'description' => 'Writing assistant', 'category' => 'writing', 'sort_order' => 41],
             ['slug' => 'vecteezy', 'name' => 'Vecteezy', 'description' => 'Vectors & design assets', 'category' => 'design', 'sort_order' => 42],
             ['slug' => 'flaticon', 'name' => 'Flaticon', 'description' => 'Icons & graphics', 'category' => 'design', 'sort_order' => 43],
-            ['slug' => 'tuneo', 'name' => 'Tuneo', 'description' => 'AI writing & content tools', 'category' => 'ai', 'sort_order' => 44],
-            ['slug' => 'tunet', 'name' => 'Tunet', 'description' => 'AI content tools', 'category' => 'ai', 'sort_order' => 45],
+            ['slug' => 'wordtune', 'name' => 'Wordtune', 'description' => 'AI writing & rewrite assistant', 'category' => 'writing', 'sort_order' => 44],
             ['slug' => 'writehuman', 'name' => 'WriteHuman', 'description' => 'Humanize AI content', 'category' => 'writing', 'sort_order' => 46],
             ['slug' => 'bypassgpt', 'name' => 'BypassGPT', 'description' => 'AI detector bypass', 'category' => 'ai', 'sort_order' => 47],
         ];
@@ -91,8 +90,8 @@ class BonusToolsSeeder extends Seeder
             ['tool' => 'grammarly', 'slug' => 'tzgram1', 'label' => 'Access Grammarly', 'website_id' => 78, 'domain' => 'tzgram1.1clkaccess.store'],
             ['tool' => 'vecteezy', 'slug' => 'tzvec', 'label' => 'Access Vecteezy', 'website_id' => 79, 'domain' => 'tzvec.1clkaccess.store'],
             ['tool' => 'flaticon', 'slug' => 'tzflaticon', 'label' => 'Access Flaticon', 'website_id' => 80, 'domain' => 'tzflaticon.1clkaccess.store'],
-            ['tool' => 'tuneo', 'slug' => 'tztuneo', 'label' => 'Access Tuneo', 'website_id' => 81, 'domain' => 'tztuneo.1clkaccess.store'],
-            ['tool' => 'tunet', 'slug' => 'tztunet', 'label' => 'Access Tunet', 'website_id' => 82, 'domain' => 'tztunet.1clkaccess.store'],
+            ['tool' => 'wordtune', 'slug' => 'tztuneo', 'label' => 'Wordtune 1', 'website_id' => 81, 'domain' => 'tztuneo.1clkaccess.store'],
+            ['tool' => 'wordtune', 'slug' => 'tztunet', 'label' => 'Wordtune 2', 'website_id' => 82, 'domain' => 'tztunet.1clkaccess.store'],
             ['tool' => 'writehuman', 'slug' => 'tzwritehuman', 'label' => 'Access WriteHuman', 'website_id' => 83, 'domain' => 'tzwritehuman.1clkaccess.store'],
             ['tool' => 'bypassgpt', 'slug' => 'tzbypass', 'label' => 'Access BypassGPT', 'website_id' => 84, 'domain' => 'tzbypass.1clkaccess.store'],
         ];
@@ -137,6 +136,8 @@ class BonusToolsSeeder extends Seeder
             );
         }
 
+        $this->removeLegacyTools(['tuneo', 'tunet']);
+
         $bonus = Tool::where('slug', 'bonus')->first();
         $combo = Plan::where('slug', 'combo')->first();
 
@@ -147,5 +148,40 @@ class BonusToolsSeeder extends Seeder
             }
             $combo->tools()->sync($ids);
         }
+    }
+
+    /**
+     * @param  array<int, string>  $slugs
+     */
+    protected function removeLegacyTools(array $slugs): void
+    {
+        foreach ($slugs as $slug) {
+            $tool = Tool::where('slug', $slug)->first();
+            if (! $tool) {
+                continue;
+            }
+
+            $tool->load('accessGroup.servers');
+            $tool->accessGroup?->servers()->delete();
+            $tool->accessGroup?->delete();
+            $tool->credentials()->delete();
+            $tool->plans()->detach();
+            $tool->articles()->update(['tool_id' => null]);
+            $tool->delete();
+        }
+
+        Tool::query()
+            ->whereNotNull('grants_tool_slugs')
+            ->get()
+            ->each(function (Tool $package) use ($slugs) {
+                $updated = collect($package->grants_tool_slugs ?? [])
+                    ->reject(fn ($s) => in_array($s, $slugs, true))
+                    ->values()
+                    ->all();
+
+                if ($updated !== ($package->grants_tool_slugs ?? [])) {
+                    $package->update(['grants_tool_slugs' => $updated]);
+                }
+            });
     }
 }

@@ -18,7 +18,14 @@
                         <td><code>{{ $group->slug }}</code></td>
                         <td>{{ $group->tool?->name ?? $group->grant }}</td>
                         <td class="text-xs">/dashboard/tools/access/{{ $group->slug }}</td>
-                        <td><a href="{{ route('admin.tool-groups.edit', $group) }}" class="ui-btn-ghost text-xs">Edit</a></td>
+                        <td class="whitespace-nowrap">
+                            <a href="{{ route('admin.tool-groups.edit', $group) }}" class="ui-btn-ghost text-xs">Edit</a>
+                            <form method="POST" action="{{ route('admin.tool-groups.destroy', $group) }}" class="inline" onsubmit="return confirm('Delete group {{ $group->title }}? Access servers under it will also be removed.')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="ui-btn-ghost text-xs text-danger">Delete</button>
+                            </form>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

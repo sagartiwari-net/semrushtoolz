@@ -83,6 +83,41 @@ class ToolCatalogController extends Controller
         return back()->with('success', 'Tool status updated.');
     }
 
+    public function destroy(Tool $tool)
+    {
+        $slug = $tool->slug;
+        $name = $tool->name;
+
+        $tool->load('accessGroup.servers');
+        $tool->accessGroup?->servers()->delete();
+        $tool->accessGroup?->delete();
+        $tool->credentials()->delete();
+        $tool->plans()->detach();
+        $tool->articles()->update(['tool_id' => null]);
+        $tool->delete();
+
+        Tool::query()
+            ->whereNotNull('grants_tool_slugs')
+            ->get()
+            ->each(function (Tool $package) use ($slug) {
+                $slugs = collect($package->grants_tool_slugs ?? [])
+                    ->reject(fn ($s) => $s === $slug)
+                    ->values()
+                    ->all();
+
+                if ($slugs !== ($package->grants_tool_slugs ?? [])) {
+                    $package->update(['grants_tool_slugs' => $slugs]);
+                }
+            });
+
+        Tool::query()
+            ->where('grants_tool_slug', $slug)
+            ->update(['grants_tool_slug' => null]);
+
+        return redirect()->route('admin.tools.index')
+            ->with('success', "Tool \"{$name}\" deleted.");
+    }
+
     public function seoSuggestions(Request $request)
     {
         $tool = $request->filled('tool_id')

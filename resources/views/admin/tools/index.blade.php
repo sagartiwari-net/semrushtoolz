@@ -40,10 +40,15 @@
                             <a href="{{ route('admin.users', ['tool_id' => $tool->id]) }}" class="text-accent hover:underline">{{ $counts['total'] }} total</a>
                         </td>
                         <td><span @class(['dash-badge-online' => $tool->is_active, 'dash-badge-offline' => !$tool->is_active])>{{ $tool->is_active ? 'On' : 'Off' }}</span></td>
-                        <td>
+                        <td class="whitespace-nowrap">
                             <a href="{{ route('admin.tools.preview', $tool) }}" target="_blank" class="ui-btn-ghost text-xs">Preview</a>
                             <a href="{{ route('admin.tools.edit', $tool) }}" class="ui-btn-ghost text-xs">Edit</a>
                             <form method="POST" action="{{ route('admin.tools.toggle', $tool) }}" class="inline">@csrf<button class="ui-btn-ghost text-xs">Toggle</button></form>
+                            <form method="POST" action="{{ route('admin.tools.destroy', $tool) }}" class="inline" onsubmit="return confirm('Delete tool {{ $tool->name }}? This also removes its access group and servers.')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="ui-btn-ghost text-xs text-danger">Delete</button>
+                            </form>
                         </td>
                     </tr>
                 @endforeach

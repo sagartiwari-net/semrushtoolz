@@ -138,7 +138,16 @@
             <p class="text-xs text-ink-muted">After saving, create a <a href="{{ route('admin.tool-groups.index') }}" class="text-accent">Tool Group</a> and <a href="{{ route('admin.tool-servers.index') }}" class="text-accent">Access Servers</a> for cloud/extension buttons.</p>
         </div>
 
-        <button class="ui-btn-primary">Save Tool</button>
+        <div class="flex flex-wrap items-center gap-3">
+            <button class="ui-btn-primary">Save Tool</button>
+            @if ($tool->exists)
+                <form method="POST" action="{{ route('admin.tools.destroy', $tool) }}" onsubmit="return confirm('Delete tool {{ $tool->name }}? This also removes its access group and servers.')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="ui-btn-ghost text-danger">Delete tool</button>
+                </form>
+            @endif
+        </div>
     </form>
 
     <script>

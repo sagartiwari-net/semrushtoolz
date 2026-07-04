@@ -177,6 +177,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/tools/{tool}/preview', [ToolCatalogController::class, 'preview'])->name('tools.preview');
         Route::put('/tools/{tool}', [ToolCatalogController::class, 'update'])->name('tools.update');
         Route::post('/tools/{tool}/toggle', [ToolCatalogController::class, 'toggle'])->name('tools.toggle');
+        Route::delete('/tools/{tool}', [ToolCatalogController::class, 'destroy'])->name('tools.destroy');
 
         Route::get('/articles', [AdminArticleController::class, 'index'])->name('articles.index');
         Route::get('/articles/create', [AdminArticleController::class, 'create'])->name('articles.create');
@@ -193,6 +194,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/tool-groups', [ToolGroupController::class, 'store'])->name('tool-groups.store');
         Route::get('/tool-groups/{toolGroup}/edit', [ToolGroupController::class, 'edit'])->name('tool-groups.edit');
         Route::put('/tool-groups/{toolGroup}', [ToolGroupController::class, 'update'])->name('tool-groups.update');
+        Route::delete('/tool-groups/{toolGroup}', [ToolGroupController::class, 'destroy'])->name('tool-groups.destroy');
 
         Route::get('/legal-pages', [LegalPageController::class, 'index'])->name('legal-pages.index');
         Route::get('/legal-pages/create', [LegalPageController::class, 'create'])->name('legal-pages.create');

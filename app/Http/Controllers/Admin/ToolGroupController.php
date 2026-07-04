@@ -56,4 +56,14 @@ class ToolGroupController extends Controller
 
         return redirect()->route('admin.tool-groups.index')->with('success', 'Tool group updated.');
     }
+
+    public function destroy(ToolAccessGroup $toolGroup)
+    {
+        $title = $toolGroup->title;
+        $toolGroup->servers()->delete();
+        $toolGroup->delete();
+
+        return redirect()->route('admin.tool-groups.index')
+            ->with('success', "Group \"{$title}\" deleted.");
+    }
 }
