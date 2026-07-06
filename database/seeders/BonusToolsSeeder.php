@@ -32,6 +32,14 @@ class BonusToolsSeeder extends Seeder
             ['slug' => 'wordtune', 'name' => 'Wordtune', 'description' => 'AI writing & rewrite assistant', 'category' => 'writing', 'sort_order' => 44],
             ['slug' => 'writehuman', 'name' => 'WriteHuman', 'description' => 'Humanize AI content', 'category' => 'writing', 'sort_order' => 46],
             ['slug' => 'bypassgpt', 'name' => 'BypassGPT', 'description' => 'AI detector bypass', 'category' => 'ai', 'sort_order' => 47],
+            ['slug' => 'hixbypass', 'name' => 'HixByPass', 'description' => 'AI content bypass', 'category' => 'ai', 'sort_order' => 48],
+            ['slug' => 'tubemagic', 'name' => 'TubeMagic', 'description' => 'YouTube AI tools', 'category' => 'ai', 'sort_order' => 49],
+            ['slug' => 'writecream', 'name' => 'Writecream', 'description' => 'AI copywriting', 'category' => 'writing', 'sort_order' => 50],
+            ['slug' => 'vidlq', 'name' => 'VidIQ', 'description' => 'YouTube growth & analytics', 'category' => 'seo', 'sort_order' => 51],
+            ['slug' => 'jasper', 'name' => 'Jasper', 'description' => 'AI writing assistant', 'category' => 'writing', 'sort_order' => 52],
+            ['slug' => 'quillbot', 'name' => 'Quillbot', 'description' => 'Paraphrasing & grammar', 'category' => 'writing', 'sort_order' => 53],
+            ['slug' => 'humanizer', 'name' => 'Humanizer', 'description' => 'Humanize AI text', 'category' => 'ai', 'sort_order' => 54],
+            ['slug' => 'iconscout', 'name' => 'IconScout', 'description' => 'Icons & design assets downloader', 'category' => 'design', 'sort_order' => 55],
         ];
 
         $childSlugs = [];
@@ -94,6 +102,16 @@ class BonusToolsSeeder extends Seeder
             ['tool' => 'wordtune', 'slug' => 'tztunet', 'label' => 'Wordtune 2', 'website_id' => 82, 'domain' => 'tztunet.1clkaccess.store'],
             ['tool' => 'writehuman', 'slug' => 'tzwritehuman', 'label' => 'Access WriteHuman', 'website_id' => 83, 'domain' => 'tzwritehuman.1clkaccess.store'],
             ['tool' => 'bypassgpt', 'slug' => 'tzbypass', 'label' => 'Access BypassGPT', 'website_id' => 84, 'domain' => 'tzbypass.1clkaccess.store'],
+            ['tool' => 'hixbypass', 'slug' => 'tzhixbypass', 'label' => 'Access HixByPass', 'website_id' => 85, 'domain' => 'tzhixbypass.1clkaccess.store'],
+            ['tool' => 'tubemagic', 'slug' => 'tztube', 'label' => 'Access TubeMagic', 'website_id' => 86, 'domain' => 'tztube.1clkaccess.store'],
+            ['tool' => 'writecream', 'slug' => 'tzcream', 'label' => 'Access Writecream', 'website_id' => 87, 'domain' => 'tzcream.1clkaccess.store'],
+            ['tool' => 'vidlq', 'slug' => 'tzvidlq', 'label' => 'Access VidIQ', 'website_id' => 89, 'domain' => 'tzvidlq.1clkaccess.store'],
+            ['tool' => 'jasper', 'slug' => 'tzjas', 'label' => 'Jasper 1', 'website_id' => 90, 'domain' => 'tzjas.1clkaccess.store'],
+            ['tool' => 'jasper', 'slug' => 'tzjas2', 'label' => 'Jasper 2', 'website_id' => 91, 'domain' => 'tzjas2.1clkaccess.store'],
+            ['tool' => 'quillbot', 'slug' => 'tzquill', 'label' => 'Quillbot 1', 'website_id' => 92, 'domain' => 'tzquill.1clkaccess.store'],
+            ['tool' => 'quillbot', 'slug' => 'tzquilll', 'label' => 'Quillbot 2', 'website_id' => 93, 'domain' => 'tzquilll.1clkaccess.store'],
+            ['tool' => 'humanizer', 'slug' => 'tzhuma', 'label' => 'Access Humanizer', 'website_id' => 94, 'domain' => 'tzhuma.1clkaccess.store'],
+            ['tool' => 'iconscout', 'slug' => 'tzicon', 'label' => 'Access IconScout', 'website_id' => 95, 'domain' => 'tzicon.1clkaccess.store'],
         ];
 
         $orderByTool = [];
