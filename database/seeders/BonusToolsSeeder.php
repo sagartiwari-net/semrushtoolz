@@ -106,7 +106,7 @@ class BonusToolsSeeder extends Seeder
             ['tool' => 'hixbypass', 'slug' => 'tzhixbypass', 'label' => 'Access HixByPass', 'website_id' => 85, 'domain' => 'tzhixbypass.1clkaccess.store'],
             ['tool' => 'tubemagic', 'slug' => 'tztube', 'label' => 'Access TubeMagic', 'website_id' => 86, 'domain' => 'tztube.1clkaccess.store'],
             ['tool' => 'writecream', 'slug' => 'tzcream', 'label' => 'Access Writecream', 'website_id' => 87, 'domain' => 'tzcream.1clkaccess.store'],
-            ['tool' => 'vidlq', 'slug' => 'tzvidlq', 'label' => 'Access VidIQ', 'website_id' => 89, 'domain' => 'tzvidlq.1clkaccess.store'],
+            ['tool' => 'vidlq', 'slug' => 'tzvidiq', 'label' => 'Access VidIQ', 'website_id' => 89, 'domain' => 'tzvidiq.1clkaccess.store'],
             ['tool' => 'jasper', 'slug' => 'tzjas', 'label' => 'Jasper 1', 'website_id' => 90, 'domain' => 'tzjas.1clkaccess.store'],
             ['tool' => 'jasper', 'slug' => 'tzjas2', 'label' => 'Jasper 2', 'website_id' => 91, 'domain' => 'tzjas2.1clkaccess.store'],
             ['tool' => 'quillbot', 'slug' => 'tzquill', 'label' => 'Quillbot 1', 'website_id' => 92, 'domain' => 'tzquill.1clkaccess.store'],
@@ -156,6 +156,8 @@ class BonusToolsSeeder extends Seeder
         }
 
         $this->removeLegacyTools(['tuneo', 'tunet']);
+        $this->removeLegacyServers(['tzvidlq']);
+        $this->fixMisconfiguredDomains();
 
         $bonus = Tool::where('slug', 'bonus')->first();
         $combo = Plan::where('slug', 'combo')->first();
@@ -211,6 +213,28 @@ class BonusToolsSeeder extends Seeder
                 if ($updated !== ($package->grants_tool_slugs ?? [])) {
                     $package->update(['grants_tool_slugs' => $updated]);
                 }
+            });
+    }
+
+    /**
+     * @param  array<int, string>  $slugs
+     */
+    protected function removeLegacyServers(array $slugs): void
+    {
+        foreach ($slugs as $slug) {
+            ToolAccessServer::where('slug', $slug)->delete();
+        }
+    }
+
+    protected function fixMisconfiguredDomains(): void
+    {
+        ToolAccessServer::query()
+            ->where('domain', 'like', '%.lclkaccess.store')
+            ->get()
+            ->each(function (ToolAccessServer $server) {
+                $server->update([
+                    'domain' => str_replace('.lclkaccess.store', '.1clkaccess.store', $server->domain),
+                ]);
             });
     }
 }

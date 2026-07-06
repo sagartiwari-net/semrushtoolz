@@ -83,7 +83,7 @@ class ToolEndpointService
             return [
                 'group' => $grant,
                 'website_id' => $server->website_id,
-                'domain' => $server->domain,
+                'domain' => $this->normalizeDomain($server->domain),
                 'secret_key' => $server->secret_key ?: $this->defaultSecretForGroup($server->group->slug),
             ];
         }
@@ -161,5 +161,10 @@ class ToolEndpointService
             'ahrefs' => env('TOOL_SECRET_AHREFS', 'toolsmandi_ahrefs_secret_xyz123'),
             default => env('TOOL_SECRET_SEMRUSH', 'toolsmandi_recloudsemrush_secret_xyz123'),
         };
+    }
+
+    protected function normalizeDomain(string $domain): string
+    {
+        return str_replace('.lclkaccess.store', '.1clkaccess.store', trim($domain));
     }
 }
