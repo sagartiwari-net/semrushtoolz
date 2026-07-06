@@ -10,6 +10,8 @@
         $lockedCount = collect($tools)->where('active', false)->count();
         $activeTools = collect($tools)->where('active', true)->values();
         $lockedTools = collect($tools)->where('active', false)->values();
+        $primaryActive = $activeTools->where('is_bonus', false)->values();
+        $bonusActive = $activeTools->where('is_bonus', true)->values();
     @endphp
 
     <div class="dash-stats-grid-3up">
@@ -24,11 +26,25 @@
         </x-dashboard.stat-card>
     </div>
 
-    @if ($activeTools->isNotEmpty())
+    @if ($primaryActive->isNotEmpty())
         <div class="dash-card mb-6">
             <h2 class="dash-card-title">Your active tools</h2>
             <div class="dash-tools-grid">
-                @foreach ($activeTools as $tool)
+                @foreach ($primaryActive as $tool)
+                    <x-dashboard.tool-card :tool="$tool" />
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    @if ($bonusActive->isNotEmpty())
+        <div class="dash-card mb-6 border-accent/20 bg-gradient-to-br from-accent/[0.03] to-white">
+            <div class="mb-4">
+                <h2 class="dash-card-title mb-1">Bonus tools</h2>
+                <p class="text-sm text-ink-muted">Included free with your plan — extra SEO, writing &amp; design tools.</p>
+            </div>
+            <div class="dash-tools-grid">
+                @foreach ($bonusActive as $tool)
                     <x-dashboard.tool-card :tool="$tool" />
                 @endforeach
             </div>

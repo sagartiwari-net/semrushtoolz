@@ -3,19 +3,30 @@
 @php
     $hubSlug = app(\App\Services\ToolAccessService::class)->hubSlugForTool($tool['id']);
     $accessType = $tool['access_type'] ?? 'cloud';
+    $isBonus = $tool['is_bonus'] ?? false;
 @endphp
 
 <div @class([
     'dash-tool-card',
     'dash-tool-card-featured' => $tool['featured'] ?? false,
+    'dash-tool-card-bonus' => $isBonus,
     'opacity-75' => !($tool['active'] ?? false),
 ])>
     <div class="flex items-center gap-3">
         <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface">
-            <img src="{{ $tool['logo'] }}" alt="{{ $tool['name'] }}" class="h-8 w-8 object-contain">
+            @if (!empty($tool['logo']))
+                <img src="{{ $tool['logo'] }}" alt="{{ $tool['name'] }}" class="h-8 w-8 object-contain">
+            @else
+                <span class="text-xl leading-none" aria-hidden="true">{{ $isBonus ? '🎁' : '🔧' }}</span>
+            @endif
         </div>
         <div class="min-w-0 flex-1">
-            <div class="font-bold text-ink">{{ $tool['name'] }}</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="font-bold text-ink">{{ $tool['name'] }}</div>
+                @if ($isBonus)
+                    <span class="dash-badge-bonus">Bonus</span>
+                @endif
+            </div>
             <div class="text-xs text-ink-muted">{{ $tool['desc'] }}</div>
         </div>
         @if ($tool['active'])

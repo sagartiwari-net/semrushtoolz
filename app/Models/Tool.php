@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Cache;
 
 class Tool extends Model
 {
@@ -24,6 +25,12 @@ class Tool extends Model
     public const CATEGORY_WRITING = 'writing';
 
     public const CATEGORY_DESIGN = 'design';
+
+    /** @var array<string, string> Legacy slugs merged into a single tool. */
+    public const SLUG_ALIASES = [
+        'tuneo' => 'wordtune',
+        'tunet' => 'wordtune',
+    ];
 
     public static function categories(): array
     {
@@ -140,6 +147,26 @@ class Tool extends Model
     public function isPackageGrant(): bool
     {
         return $this->grantsToolSlugs() !== [];
+    }
+
+    public static function resolveSlugAlias(string $slug): string
+    {
+        return self::SLUG_ALIASES[$slug] ?? $slug;
+    }
+
+    /** @return array<int, string> */
+    public static function bonusChildSlugs(): array
+    {
+        return Cache::remember('tools.bonus_child_slugs', now()->addMinutes(10), function () {
+            $bonus = static::where('slug', 'bonus')->first();
+
+            return $bonus?->grantsToolSlugs() ?? [];
+        });
+    }
+
+    public function isBonusChild(): bool
+    {
+        return in_array($this->slug, self::bonusChildSlugs(), true);
     }
 
     /**

@@ -57,7 +57,10 @@ class SubscriptionService
             $slugs = array_merge($slugs, $this->grantedToolSlugs($sub));
         }
 
-        return array_values(array_unique($slugs));
+        return array_values(array_unique(array_map(
+            fn (string $slug) => Tool::resolveSlugAlias($slug),
+            $slugs
+        )));
     }
 
     public function grantedToolSlugs(?Subscription $sub): array
@@ -84,27 +87,30 @@ class SubscriptionService
     public function accessibleTools(User $user): array
     {
         $grantedSlugs = $this->grantedToolSlugsForUser($user);
+        $bonusSlugs = Tool::bonusChildSlugs();
 
         return Tool::where('is_active', true)
             ->orderBy('sort_order')
             ->get()
             // Package parents (Bonus Tools) unlock children — show children as separate cards only.
-            ->reject(fn (Tool $tool) => $tool->isPackageGrant())
-            ->map(function (Tool $tool) use ($grantedSlugs, $user) {
+            ->reject(fn (Tool $tool) => $tool->isPackageGrant() || array_key_exists($tool->slug, Tool::SLUG_ALIASES))
+            ->map(function (Tool $tool) use ($grantedSlugs, $user, $bonusSlugs) {
                 $toolAccess = app(ToolAccessService::class);
+                $slug = Tool::resolveSlugAlias($tool->slug);
 
                 return [
-                    'id' => $tool->slug,
+                    'id' => $slug,
                     'name' => $tool->name,
                     'desc' => $tool->description ?? '',
                     'logo' => $tool->logo_url,
                     'status' => $tool->access_type,
                     'access_type' => $tool->access_type,
-                    'active' => in_array($tool->slug, $grantedSlugs, true),
+                    'active' => in_array($slug, $grantedSlugs, true) || in_array($tool->slug, $grantedSlugs, true),
                     'featured' => $tool->slug === 'semrush',
+                    'is_bonus' => in_array($slug, $bonusSlugs, true),
                     'is_extension' => $tool->access_type === Tool::ACCESS_EXTENSION,
-                    'seats' => $tool->isCloud() ? ($toolAccess->seatLabel($tool->slug) ?? '—') : null,
-                    'last_accessed' => $toolAccess->lastAccessed($user, $tool->slug),
+                    'seats' => $tool->isCloud() ? ($toolAccess->seatLabel($slug) ?? '—') : null,
+                    'last_accessed' => $toolAccess->lastAccessed($user, $slug),
                     'session' => null,
                 ];
             })

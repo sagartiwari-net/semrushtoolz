@@ -7,6 +7,7 @@ use App\Models\Tool;
 use App\Models\ToolAccessGroup;
 use App\Models\ToolAccessServer;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Cache;
 
 class BonusToolsSeeder extends Seeder
 {
@@ -166,6 +167,8 @@ class BonusToolsSeeder extends Seeder
             }
             $combo->tools()->sync($ids);
         }
+
+        Cache::forget('tools.bonus_child_slugs');
     }
 
     /**
@@ -174,6 +177,12 @@ class BonusToolsSeeder extends Seeder
     protected function removeLegacyTools(array $slugs): void
     {
         foreach ($slugs as $slug) {
+            $orphanGroup = ToolAccessGroup::where('slug', $slug)->first();
+            if ($orphanGroup) {
+                $orphanGroup->servers()->delete();
+                $orphanGroup->delete();
+            }
+
             $tool = Tool::where('slug', $slug)->first();
             if (! $tool) {
                 continue;
@@ -193,7 +202,9 @@ class BonusToolsSeeder extends Seeder
             ->get()
             ->each(function (Tool $package) use ($slugs) {
                 $updated = collect($package->grants_tool_slugs ?? [])
+                    ->map(fn ($s) => Tool::resolveSlugAlias((string) $s))
                     ->reject(fn ($s) => in_array($s, $slugs, true))
+                    ->unique()
                     ->values()
                     ->all();
 

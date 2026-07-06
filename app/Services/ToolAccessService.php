@@ -40,6 +40,8 @@ class ToolAccessService
 
     public function hubSlugForTool(string $toolSlug): ?string
     {
+        $toolSlug = Tool::resolveSlugAlias($toolSlug);
+
         $group = \App\Models\ToolAccessGroup::whereHas('tool', fn ($q) => $q->where('slug', $toolSlug))
             ->where('is_active', true)
             ->first();

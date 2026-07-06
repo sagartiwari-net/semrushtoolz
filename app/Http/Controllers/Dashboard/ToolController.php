@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tool;
 use App\Models\ToolAccessServer;
 use App\Services\DashboardPresenter;
 use App\Services\ExtensionAccessService;
@@ -34,6 +35,11 @@ class ToolController extends Controller
 
     public function hub(string $group)
     {
+        $canonical = Tool::resolveSlugAlias($group);
+        if ($canonical !== $group) {
+            return redirect()->route('dashboard.tools.hub', $canonical);
+        }
+
         $config = $this->handshake->hubConfig($group);
 
         abort_unless($config, 404);
