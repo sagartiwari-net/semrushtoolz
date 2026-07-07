@@ -71,9 +71,12 @@ class ToolController extends Controller
 
             return redirect()->away($redirectUrl);
         } catch (\Throwable $e) {
+            $server = ToolAccessServer::with('group')->where('slug', $tool)->first();
+
             return view('dashboard.access.error', array_merge($this->shared(), [
                 'message' => $e->getMessage(),
                 'tool' => $tool,
+                'hubGroup' => $server?->group?->slug,
                 'activeNav' => 'dashboard.tools',
             ]));
         }

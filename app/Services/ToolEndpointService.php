@@ -157,6 +157,10 @@ class ToolEndpointService
 
     protected function defaultSecretForGroup(string $groupSlug): string
     {
+        if (in_array($groupSlug, \App\Models\Tool::bonusChildSlugs(), true)) {
+            return env('TOOL_SECRET_RECLOUD', 'toolsmandi_recloud_secret_xyz123');
+        }
+
         return match ($groupSlug) {
             'ahrefs' => env('TOOL_SECRET_AHREFS', 'toolsmandi_ahrefs_secret_xyz123'),
             default => env('TOOL_SECRET_SEMRUSH', 'toolsmandi_recloudsemrush_secret_xyz123'),

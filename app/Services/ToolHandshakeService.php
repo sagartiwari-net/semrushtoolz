@@ -60,7 +60,7 @@ class ToolHandshakeService
                 'status' => $response->status(),
                 'message' => $message,
             ]);
-            throw new \RuntimeException("Handshake failed (HTTP {$response->status()}): {$message}");
+            throw new \RuntimeException($this->friendlyHandshakeError($response->status(), $message, $endpoint['domain'] ?? ''));
         }
 
         $redirectUrl = $response->json('redirect_url');
@@ -102,5 +102,24 @@ class ToolHandshakeService
             'access_url' => $url,
             'started_at' => now(),
         ]);
+    }
+
+    protected function friendlyHandshakeError(int $status, string $message, string $domain): string
+    {
+        $base = "Handshake failed (HTTP {$status}): {$message}";
+
+        if ($status === 502) {
+            return $base.' — This proxy server appears offline. Try another access button or contact support.';
+        }
+
+        if ($status === 403 && str_contains($message, 'Invalid signature')) {
+            return $base.' — Server secret/domain mismatch. Try another access button (e.g. Access 1).';
+        }
+
+        if ($status === 503) {
+            return $base.' — Proxy database not connected. Try again later or use another server.';
+        }
+
+        return $base;
     }
 }
