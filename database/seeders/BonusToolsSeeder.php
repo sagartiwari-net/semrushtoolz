@@ -105,8 +105,7 @@ class BonusToolsSeeder extends Seeder
             ['tool' => 'seranking', 'slug' => 'tzseranking', 'label' => 'SE Ranking 1', 'website_id' => 74, 'domain' => 'tzseranking.1clkaccess.store'],
             ['tool' => 'seranking', 'slug' => 'nxserank', 'label' => 'SE Ranking 2', 'website_id' => 100, 'domain' => 'nxserank.1clkaccess.store'],
             ['tool' => 'indexer', 'slug' => 'tzindexer', 'label' => 'Access Indexer', 'website_id' => 75, 'domain' => 'tzindexer.1clkaccess.store'],
-            ['tool' => 'indexification', 'slug' => 'tzindexfication', 'label' => 'Indexification 1', 'website_id' => 76, 'domain' => 'tzindexfication.1clkaccess.store'],
-            ['tool' => 'indexification', 'slug' => 'nxindex1', 'label' => 'Indexification 2', 'website_id' => 58, 'domain' => 'nxindex1.1clkaccess.store'],
+            ['tool' => 'indexification', 'slug' => 'tzindexfication', 'label' => 'Access Indexification', 'website_id' => 76, 'domain' => 'tzindexfication.1clkaccess.store'],
             ['tool' => 'bkrepo', 'slug' => 'tzbkrepo', 'label' => 'Access Backlink Repo', 'website_id' => 77, 'domain' => 'tzbkrepo.1clkaccess.store'],
             ['tool' => 'grammarly', 'slug' => 'tzgram1', 'label' => 'Grammarly 1', 'website_id' => 78, 'domain' => 'tzgram1.1clkaccess.store'],
             ['tool' => 'grammarly', 'slug' => 'nxgram', 'label' => 'Grammarly 2', 'website_id' => 53, 'domain' => 'nxgram.1clkaccess.store'],
@@ -178,7 +177,7 @@ class BonusToolsSeeder extends Seeder
         }
 
         $this->removeLegacyTools(['tuneo', 'tunet']);
-        $this->removeLegacyServers(['tzvidlq', 'tzquilll']);
+        $this->removeLegacyServers(['tzvidlq', 'tzquilll', 'nxindex1']);
         $this->fixMisconfiguredDomains();
 
         $bonus = Tool::where('slug', 'bonus')->first();
