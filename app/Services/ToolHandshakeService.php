@@ -33,7 +33,10 @@ class ToolHandshakeService
 
         $username = $this->resolveUsername($user);
         $timestamp = time();
-        $secretKey = $endpoint['secret_key'];
+        $secretKey = (string) ($endpoint['secret_key'] ?? '');
+        if ($secretKey === '') {
+            throw new \RuntimeException('This access server is missing a secret key. Try another server or contact support.');
+        }
         $signature = hash_hmac('sha256', $username.':'.$timestamp, $secretKey);
         $productIds = $this->resolveProductIds($user);
 
@@ -47,10 +50,14 @@ class ToolHandshakeService
 
         $handshakeUrl = "https://{$endpoint['domain']}/api/auth-handshake";
 
-        $response = Http::timeout(15)
-            ->withOptions(['verify' => false])
-            ->acceptJson()
-            ->post($handshakeUrl, $payload);
+        try {
+            $response = Http::timeout(15)
+                ->withOptions(['verify' => false])
+                ->acceptJson()
+                ->post($handshakeUrl, $payload);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            throw new \RuntimeException($this->friendlyHandshakeError(502, 'Proxy unreachable', $endpoint['domain'] ?? ''));
+        }
 
         if (! $response->successful()) {
             $message = $response->json('message') ?? strip_tags(substr($response->body(), 0, 300));

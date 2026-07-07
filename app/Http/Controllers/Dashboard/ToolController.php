@@ -60,9 +60,9 @@ class ToolController extends Controller
 
     public function route(Request $request, string $tool)
     {
-        abort_unless($this->endpoints->endpoint($tool), 404);
-
         try {
+            abort_unless($this->endpoints->endpoint($tool), 404);
+
             $redirectUrl = $this->handshake->handshake(
                 Auth::user(),
                 $tool,
@@ -74,7 +74,7 @@ class ToolController extends Controller
             $server = ToolAccessServer::with('group')->where('slug', $tool)->first();
 
             return view('dashboard.access.error', array_merge($this->shared(), [
-                'message' => $e->getMessage(),
+                'errorMessage' => $e->getMessage(),
                 'tool' => $tool,
                 'hubGroup' => $server?->group?->slug,
                 'activeNav' => 'dashboard.tools',
@@ -97,7 +97,7 @@ class ToolController extends Controller
             return redirect()->away($redirectUrl);
         } catch (\Throwable $e) {
             return view('dashboard.access.error', array_merge($this->shared(), [
-                'message' => $e->getMessage(),
+                'errorMessage' => $e->getMessage(),
                 'tool' => $tool,
                 'activeNav' => 'dashboard.tools',
             ]));

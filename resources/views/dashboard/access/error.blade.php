@@ -3,6 +3,9 @@
 @section('title', 'Access Error')
 
 @section('content')
+    @php
+        $errorText = is_string($errorMessage ?? null) ? $errorMessage : 'Unable to connect to this tool server.';
+    @endphp
     <div class="mx-auto max-w-lg">
         <div class="dash-card text-center">
             <div class="text-5xl">⚠️</div>
@@ -11,11 +14,11 @@
                 Tool: <strong>{{ $tool }}</strong>
             </p>
             <div class="mt-4 rounded-xl border border-danger/20 bg-danger/5 px-4 py-3 text-left text-xs text-danger">
-                {{ $message }}
+                {{ $errorText }}
             </div>
-            @if (str_contains($message, '502') || str_contains($message, 'offline'))
+            @if (str_contains($errorText, '502') || str_contains($errorText, 'offline') || str_contains($errorText, 'unreachable'))
                 <p class="mt-4 text-sm text-ink-muted">This server may not be deployed yet. Try another access button on the same tool page.</p>
-            @elseif (str_contains($message, 'Invalid signature'))
+            @elseif (str_contains($errorText, 'Invalid signature'))
                 <p class="mt-4 text-sm text-ink-muted">Try <strong>Access 1</strong> on the same tool, or another numbered server if available.</p>
             @endif
             <div class="mt-6 flex flex-wrap justify-center gap-3">

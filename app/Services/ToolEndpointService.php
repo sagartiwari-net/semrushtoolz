@@ -78,13 +78,18 @@ class ToolEndpointService
             ->first();
 
         if ($server && $server->isProxy()) {
-            $grant = $server->group->tool?->slug ?? $server->group->grant;
+            $group = $server->group;
+            if (! $group || blank($server->domain)) {
+                return null;
+            }
+
+            $grant = $group->tool?->slug ?? $group->grant;
 
             return [
                 'group' => $grant,
                 'website_id' => $server->website_id,
-                'domain' => $this->normalizeDomain($server->domain),
-                'secret_key' => $server->secret_key ?: $this->defaultSecretForGroup($server->group->slug),
+                'domain' => $this->normalizeDomain((string) $server->domain),
+                'secret_key' => $server->secret_key ?: $this->defaultSecretForGroup($group->slug),
             ];
         }
 
@@ -167,8 +172,8 @@ class ToolEndpointService
         };
     }
 
-    protected function normalizeDomain(string $domain): string
+    protected function normalizeDomain(?string $domain): string
     {
-        return str_replace('.lclkaccess.store', '.1clkaccess.store', trim($domain));
+        return str_replace('.lclkaccess.store', '.1clkaccess.store', trim((string) $domain));
     }
 }
