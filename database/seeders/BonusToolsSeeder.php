@@ -41,6 +41,13 @@ class BonusToolsSeeder extends Seeder
             ['slug' => 'quillbot', 'name' => 'Quillbot', 'description' => 'Paraphrasing & grammar', 'category' => 'writing', 'sort_order' => 53],
             ['slug' => 'humanizer', 'name' => 'Humanizer', 'description' => 'Humanize AI text', 'category' => 'ai', 'sort_order' => 54],
             ['slug' => 'iconscout', 'name' => 'IconScout', 'description' => 'Icons & design assets downloader', 'category' => 'design', 'sort_order' => 55],
+            ['slug' => 'wordai', 'name' => 'WordAi', 'description' => 'AI content rewriter', 'category' => 'writing', 'sort_order' => 56],
+            ['slug' => 'keywordtoolz', 'name' => 'Keyword Toolz', 'description' => 'Keyword research toolkit', 'category' => 'seo', 'sort_order' => 57],
+            ['slug' => 'invideo', 'name' => 'InVideo', 'description' => 'AI video creation', 'category' => 'ai', 'sort_order' => 58],
+            ['slug' => 'answerthepublic', 'name' => 'Answer The Public', 'description' => 'Search listening & keyword ideas', 'category' => 'seo', 'sort_order' => 59],
+            ['slug' => 'seotester', 'name' => 'SEO Tester', 'description' => 'SEO analysis & testing', 'category' => 'seo', 'sort_order' => 60],
+            ['slug' => 'sellthetrend', 'name' => 'Sell The Trend', 'description' => 'Dropshipping & product research', 'category' => 'seo', 'sort_order' => 61],
+            ['slug' => 'smodin', 'name' => 'Smodin', 'description' => 'AI writing & paraphrasing', 'category' => 'writing', 'sort_order' => 62],
         ];
 
         $childSlugs = [];
@@ -84,7 +91,10 @@ class BonusToolsSeeder extends Seeder
         );
 
         $servers = [
-            ['tool' => 'ubersuggest', 'slug' => 'tzuber', 'label' => 'Access Ubersuggest', 'website_id' => 66, 'domain' => 'tzuber1.1clkaccess.store'],
+            ['tool' => 'ubersuggest', 'slug' => 'tzuber', 'label' => 'Ubersuggest 1', 'website_id' => 66, 'domain' => 'tzuber1.1clkaccess.store'],
+            ['tool' => 'ubersuggest', 'slug' => 'nxuber1', 'label' => 'Ubersuggest 2', 'website_id' => 55, 'domain' => 'nxuber1.1clkaccess.store'],
+            ['tool' => 'ubersuggest', 'slug' => 'nxuber2', 'label' => 'Ubersuggest 3', 'website_id' => 56, 'domain' => 'nxuber2.1clkaccess.store'],
+            ['tool' => 'ubersuggest', 'slug' => 'nxuber3', 'label' => 'Ubersuggest 4', 'website_id' => 57, 'domain' => 'nxuber3.1clkaccess.store'],
             ['tool' => 'similarweb', 'slug' => 'tzsimillar', 'label' => 'Access Similarweb', 'website_id' => 67, 'domain' => 'tzsimillar.1clkaccess.store'],
             ['tool' => 'writerzen', 'slug' => 'tzwriterzen', 'label' => 'Access WriterZen', 'website_id' => 68, 'domain' => 'tzwriterzen.1clkaccess.store'],
             ['tool' => 'spyfu', 'slug' => 'tzspyfu', 'label' => 'Access SpyFu', 'website_id' => 69, 'domain' => 'tzspyfu.1clkaccess.store'],
@@ -92,13 +102,17 @@ class BonusToolsSeeder extends Seeder
             ['tool' => 'kwfinder', 'slug' => 'tzkwfind2', 'label' => 'KWFinder 2', 'website_id' => 71, 'domain' => 'tzkwfind2.1clkaccess.store'],
             ['tool' => 'majestic', 'slug' => 'tzmaj', 'label' => 'Access Majestic', 'website_id' => 72, 'domain' => 'tzmaj.1clkaccess.store'],
             ['tool' => 'searchatlas', 'slug' => 'tzsearchatlas', 'label' => 'Access Search Atlas', 'website_id' => 73, 'domain' => 'tzsearchatlas.1clkaccess.store'],
-            ['tool' => 'seranking', 'slug' => 'tzseranking', 'label' => 'Access SE Ranking', 'website_id' => 74, 'domain' => 'tzseranking.1clkaccess.store'],
+            ['tool' => 'seranking', 'slug' => 'tzseranking', 'label' => 'SE Ranking 1', 'website_id' => 74, 'domain' => 'tzseranking.1clkaccess.store'],
+            ['tool' => 'seranking', 'slug' => 'nxserank', 'label' => 'SE Ranking 2', 'website_id' => 100, 'domain' => 'nxserank.1clkaccess.store'],
             ['tool' => 'indexer', 'slug' => 'tzindexer', 'label' => 'Access Indexer', 'website_id' => 75, 'domain' => 'tzindexer.1clkaccess.store'],
-            ['tool' => 'indexification', 'slug' => 'tzindexfication', 'label' => 'Access Indexification', 'website_id' => 76, 'domain' => 'tzindexfication.1clkaccess.store'],
+            ['tool' => 'indexification', 'slug' => 'tzindexfication', 'label' => 'Indexification 1', 'website_id' => 76, 'domain' => 'tzindexfication.1clkaccess.store'],
+            ['tool' => 'indexification', 'slug' => 'nxindex1', 'label' => 'Indexification 2', 'website_id' => 58, 'domain' => 'nxindex1.1clkaccess.store'],
             ['tool' => 'bkrepo', 'slug' => 'tzbkrepo', 'label' => 'Access Backlink Repo', 'website_id' => 77, 'domain' => 'tzbkrepo.1clkaccess.store'],
-            ['tool' => 'grammarly', 'slug' => 'tzgram1', 'label' => 'Access Grammarly', 'website_id' => 78, 'domain' => 'tzgram1.1clkaccess.store'],
+            ['tool' => 'grammarly', 'slug' => 'tzgram1', 'label' => 'Grammarly 1', 'website_id' => 78, 'domain' => 'tzgram1.1clkaccess.store'],
+            ['tool' => 'grammarly', 'slug' => 'nxgram', 'label' => 'Grammarly 2', 'website_id' => 53, 'domain' => 'nxgram.1clkaccess.store'],
             ['tool' => 'vecteezy', 'slug' => 'tzvec', 'label' => 'Access Vecteezy', 'website_id' => 79, 'domain' => 'tzvec.1clkaccess.store'],
-            ['tool' => 'flaticon', 'slug' => 'tzflaticon', 'label' => 'Access Flaticon', 'website_id' => 80, 'domain' => 'tzflaticon.1clkaccess.store'],
+            ['tool' => 'flaticon', 'slug' => 'tzflaticon', 'label' => 'Flaticon 1', 'website_id' => 80, 'domain' => 'tzflaticon.1clkaccess.store'],
+            ['tool' => 'flaticon', 'slug' => 'nxflaticon', 'label' => 'Flaticon 2', 'website_id' => 98, 'domain' => 'nxflaticon.1clkaccess.store'],
             ['tool' => 'wordtune', 'slug' => 'tztuneo', 'label' => 'Wordtune 1', 'website_id' => 81, 'domain' => 'tztuneo.1clkaccess.store'],
             ['tool' => 'wordtune', 'slug' => 'tztunet', 'label' => 'Wordtune 2', 'website_id' => 82, 'domain' => 'tztunet.1clkaccess.store'],
             ['tool' => 'writehuman', 'slug' => 'tzwritehuman', 'label' => 'Access WriteHuman', 'website_id' => 83, 'domain' => 'tzwritehuman.1clkaccess.store'],
@@ -110,9 +124,17 @@ class BonusToolsSeeder extends Seeder
             ['tool' => 'jasper', 'slug' => 'tzjas', 'label' => 'Jasper 1', 'website_id' => 90, 'domain' => 'tzjas.1clkaccess.store'],
             ['tool' => 'jasper', 'slug' => 'tzjas2', 'label' => 'Jasper 2', 'website_id' => 91, 'domain' => 'tzjas2.1clkaccess.store'],
             ['tool' => 'quillbot', 'slug' => 'tzquill', 'label' => 'Quillbot 1', 'website_id' => 92, 'domain' => 'tzquill.1clkaccess.store'],
-            ['tool' => 'quillbot', 'slug' => 'tzquilll', 'label' => 'Quillbot 2', 'website_id' => 93, 'domain' => 'tzquilll.1clkaccess.store'],
+            ['tool' => 'quillbot', 'slug' => 'nxquill', 'label' => 'Quillbot 2', 'website_id' => 103, 'domain' => 'nxquill.1clkaccess.store'],
+            ['tool' => 'quillbot', 'slug' => 'nxquilll', 'label' => 'Quillbot 3', 'website_id' => 104, 'domain' => 'nxquilll.1clkaccess.store'],
             ['tool' => 'humanizer', 'slug' => 'tzhuma', 'label' => 'Access Humanizer', 'website_id' => 94, 'domain' => 'tzhuma.1clkaccess.store'],
             ['tool' => 'iconscout', 'slug' => 'tzicon', 'label' => 'Access IconScout', 'website_id' => 95, 'domain' => 'tzicon.1clkaccess.store'],
+            ['tool' => 'wordai', 'slug' => 'nxwordai', 'label' => 'Access WordAi', 'website_id' => 54, 'domain' => 'nxwordai.1clkaccess.store'],
+            ['tool' => 'keywordtoolz', 'slug' => 'nxkeyword', 'label' => 'Access Keyword Toolz', 'website_id' => 96, 'domain' => 'nxkeyword.1clkaccess.store'],
+            ['tool' => 'invideo', 'slug' => 'nxinvideo', 'label' => 'Access InVideo', 'website_id' => 99, 'domain' => 'nxinvideo.1clkaccess.store'],
+            ['tool' => 'answerthepublic', 'slug' => 'nxansthepub', 'label' => 'Access Answer The Public', 'website_id' => 101, 'domain' => 'nxansthepub.1clkaccess.store'],
+            ['tool' => 'seotester', 'slug' => 'nxseotester', 'label' => 'Access SEO Tester', 'website_id' => 102, 'domain' => 'nxseotester.1clkaccess.store'],
+            ['tool' => 'sellthetrend', 'slug' => 'nxsellthetrend', 'label' => 'Access Sell The Trend', 'website_id' => 105, 'domain' => 'nxsellthetrend.1clkaccess.store'],
+            ['tool' => 'smodin', 'slug' => 'tzsmodin', 'label' => 'Access Smodin', 'website_id' => 97, 'domain' => 'tzsmodin.1clkaccess.store'],
         ];
 
         $orderByTool = [];
@@ -156,7 +178,7 @@ class BonusToolsSeeder extends Seeder
         }
 
         $this->removeLegacyTools(['tuneo', 'tunet']);
-        $this->removeLegacyServers(['tzvidlq']);
+        $this->removeLegacyServers(['tzvidlq', 'tzquilll']);
         $this->fixMisconfiguredDomains();
 
         $bonus = Tool::where('slug', 'bonus')->first();
