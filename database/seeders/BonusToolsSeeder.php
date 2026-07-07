@@ -107,8 +107,7 @@ class BonusToolsSeeder extends Seeder
             ['tool' => 'indexer', 'slug' => 'tzindexer', 'label' => 'Access Indexer', 'website_id' => 75, 'domain' => 'tzindexer.1clkaccess.store'],
             ['tool' => 'indexification', 'slug' => 'tzindexfication', 'label' => 'Access Indexification', 'website_id' => 76, 'domain' => 'tzindexfication.1clkaccess.store'],
             ['tool' => 'bkrepo', 'slug' => 'tzbkrepo', 'label' => 'Access Backlink Repo', 'website_id' => 77, 'domain' => 'tzbkrepo.1clkaccess.store'],
-            ['tool' => 'grammarly', 'slug' => 'tzgram1', 'label' => 'Grammarly 1', 'website_id' => 78, 'domain' => 'tzgram1.1clkaccess.store'],
-            ['tool' => 'grammarly', 'slug' => 'nxgram', 'label' => 'Grammarly 2', 'website_id' => 53, 'domain' => 'nxgram.1clkaccess.store'],
+            ['tool' => 'grammarly', 'slug' => 'tzgram1', 'label' => 'Access Grammarly', 'website_id' => 78, 'domain' => 'tzgram1.1clkaccess.store'],
             ['tool' => 'vecteezy', 'slug' => 'tzvec', 'label' => 'Access Vecteezy', 'website_id' => 79, 'domain' => 'tzvec.1clkaccess.store'],
             ['tool' => 'flaticon', 'slug' => 'tzflaticon', 'label' => 'Flaticon 1', 'website_id' => 80, 'domain' => 'tzflaticon.1clkaccess.store'],
             ['tool' => 'flaticon', 'slug' => 'nxflaticon', 'label' => 'Flaticon 2', 'website_id' => 98, 'domain' => 'nxflaticon.1clkaccess.store'],
@@ -177,7 +176,7 @@ class BonusToolsSeeder extends Seeder
         }
 
         $this->removeLegacyTools(['tuneo', 'tunet']);
-        $this->removeLegacyServers(['tzvidlq', 'tzquilll', 'nxindex1']);
+        $this->removeLegacyServers(['tzvidlq', 'tzquilll', 'nxindex1', 'nxgram']);
         $this->fixMisconfiguredDomains();
 
         $bonus = Tool::where('slug', 'bonus')->first();
