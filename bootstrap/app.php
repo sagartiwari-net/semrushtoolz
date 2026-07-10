@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'webhooks/paypal',
             'webhooks/buyahref',
+            'tm-check',
+            'tm-check.php',
         ]);
 
         $middleware->alias([

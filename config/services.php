@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    /*
+    | Shared secret for /tm-check.php (Bar2 / reseller membership verify).
+    | Must match X-TM-Check-Key sent by the caller (e.g. toolsmandi bar2 admin).
+    */
+    'tm_check' => [
+        'secret' => env('TM_CHECK_SECRET', ''),
+    ],
+
 ];

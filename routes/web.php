@@ -44,10 +44,15 @@ use App\Http\Controllers\PublicArticleController;
 use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Admin\SecurityController;
+use App\Http\Controllers\TmCheckController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/webhooks/paypal', PayPalWebhookController::class)->name('webhooks.paypal');
 Route::post('/webhooks/buyahref', BuyahrefWebhookController::class)->name('webhooks.buyahref');
+
+/** Bar2 / reseller membership check — same JSON shape as tm-check.php */
+Route::match(['GET', 'POST', 'OPTIONS'], '/tm-check.php', TmCheckController::class)->name('tm-check');
+Route::match(['GET', 'POST', 'OPTIONS'], '/tm-check', TmCheckController::class);
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/subscribe', SubscribeController::class)->name('subscribe');
