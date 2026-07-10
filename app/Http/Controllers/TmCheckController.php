@@ -51,13 +51,21 @@ class TmCheckController extends Controller
             return $this->fail('no_subscription');
         }
 
+        // Prefer Ahrefs bar / Ahrefs grant when available (custom plans).
+        $access = app(\App\Services\ToolAccessService::class);
+        $hasBar = $access->canAccess($user, 'ahrefs_bar')
+            || $access->userGrantsTool($user, 'ahrefs_bar')
+            || $access->userGrantsTool($user, 'ahrefs');
+
         $products = array_values(array_unique(array_filter(
             array_map('intval', $endpoints->resolveProductIds($user)),
             fn (int $id) => $id > 0
         )));
 
         $required = $this->parseProductQuery($request);
-        if ($required !== [] && count(array_intersect($required, $products)) === 0) {
+        // If Bar2 sends ?products=… require a matching plan product id,
+        // unless user already has Ahrefs / Ahrefs Bar access.
+        if ($required !== [] && count(array_intersect($required, $products)) === 0 && ! $hasBar) {
             return $this->fail('no_product');
         }
 
