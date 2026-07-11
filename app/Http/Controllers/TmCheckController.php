@@ -42,13 +42,16 @@ class TmCheckController extends Controller
             return $this->fail('not_logged_in');
         }
 
+        $userPayload = $this->userPayload($user);
+
         if ($user->status === 'blocked') {
-            return $this->fail('blocked');
+            return $this->fail('blocked', 200, $userPayload);
         }
 
         $activeSubs = $subscriptions->activeSubscriptions($user);
         if ($activeSubs->isEmpty()) {
-            return $this->fail('no_subscription');
+            // Still return user so Bar2 can identify the member without a plan.
+            return $this->fail('no_subscription', 200, $userPayload);
         }
 
         // Prefer Ahrefs bar / Ahrefs grant when available (custom plans).
@@ -66,20 +69,28 @@ class TmCheckController extends Controller
         // If Bar2 sends ?products=… require a matching plan product id,
         // unless user already has Ahrefs / Ahrefs Bar access.
         if ($required !== [] && count(array_intersect($required, $products)) === 0 && ! $hasBar) {
-            return $this->fail('no_product');
+            return $this->fail('no_product', 200, $userPayload);
         }
 
         return response()->json([
             'ok' => true,
             'site' => $request->getHost(),
-            'user' => [
-                'uid' => (int) $user->id,
-                'login' => (string) ($user->email ?? ''),
-                'email' => (string) ($user->email ?? ''),
-                'name' => (string) ($user->name ?: $user->email ?: 'member'),
-            ],
+            'user' => $userPayload,
             'products' => $products,
         ])->withHeaders($this->corsHeaders());
+    }
+
+    /**
+     * @return array{uid: int, login: string, email: string, name: string}
+     */
+    protected function userPayload(User $user): array
+    {
+        return [
+            'uid' => (int) $user->id,
+            'login' => (string) ($user->email ?? ''),
+            'email' => (string) ($user->email ?? ''),
+            'name' => (string) ($user->name ?: $user->email ?: 'member'),
+        ];
     }
 
     protected function resolveUser(Request $request): ?User
@@ -214,12 +225,21 @@ class TmCheckController extends Controller
         return array_values(array_unique($ids));
     }
 
-    protected function fail(string $error, int $http = 200): JsonResponse
+    /**
+     * @param  array{uid: int, login: string, email: string, name: string}|null  $user
+     */
+    protected function fail(string $error, int $http = 200, ?array $user = null): JsonResponse
     {
-        return response()->json([
+        $out = [
             'ok' => false,
             'error' => $error,
-        ], $http)->withHeaders($this->corsHeaders());
+        ];
+
+        if ($user !== null) {
+            $out['user'] = $user;
+        }
+
+        return response()->json($out, $http)->withHeaders($this->corsHeaders());
     }
 
     /**
