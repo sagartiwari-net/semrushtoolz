@@ -154,40 +154,71 @@ class OrderController extends Controller
 
     public function payPaypal(Order $order)
     {
-        $this->authorizeOrder($order);
-        abort_unless($order->payment_method === 'paypal', 404);
-        $order->load(['plan', 'tool']);
+        try {
+            $this->authorizeOrder($order);
+            abort_unless($order->payment_method === 'paypal', 404);
+            $order->load(['plan', 'tool']);
 
-        if ($order->expires_at && $order->expires_at->isPast() && $order->status !== 'completed') {
-            $this->orders->cancelOrder($order);
+            if ($order->expires_at && $order->expires_at->isPast() && $order->status !== 'completed') {
+                try {
+                    $this->orders->cancelOrder($order);
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
+
+            $order = $order->fresh() ?? $order;
+
+            $paypalPlanId = null;
+            $monthlyUsd = null;
+            $recurringNote = null;
+            $paypalError = null;
+
+            if ($this->paypal->isConfigured() && $order->status !== 'completed' && $order->status !== 'cancelled') {
+                try {
+                    $order = $this->paypal->prepareOrderForPayment($order);
+                    $paypalPlanId = $order->paypal_billing_plan_id;
+                    $monthlyUsd = $this->paypal->monthlyUsdForOrder($order);
+                    $cycles = (int) ($this->paypal->totalCyclesForOrder($order) ?? 0);
+                    $recurringNote = $cycles > 0
+                        ? 'USD $'.$monthlyUsd.'/month for '.$cycles.' months (auto-billed)'
+                        : 'USD $'.$monthlyUsd.'/month recurring until you cancel on PayPal';
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('PayPal prepare failed', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $paypalError = 'PayPal could not start this payment: '.$e->getMessage();
+                }
+            } elseif (! $this->paypal->isConfigured()) {
+                $paypalError = 'PayPal is not configured. Ask admin to enable PayPal in Payment Integration.';
+            }
+
+            return view('dashboard.payment.paypal', array_merge($this->shared(), [
+                'order' => $order,
+                'formattedTotal' => $this->orders->formatAmount($order),
+                'paypal' => $this->paypal->config(),
+                'paypalPlanId' => $paypalPlanId,
+                'monthlyUsd' => $monthlyUsd ?? (float) $order->total,
+                'recurringNote' => $recurringNote,
+                'paypalError' => $paypalError,
+                'approveUrl' => route('dashboard.orders.paypal.approve', $order),
+                'activeNav' => 'dashboard.orders',
+            ]));
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('PayPal pay page crashed', [
+                'order_id' => $order->id ?? null,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile().':'.$e->getLine(),
+            ]);
+
+            return response()->view('dashboard.payment.paypal-error', [
+                'message' => $e->getMessage(),
+                'orderId' => $order->id ?? null,
+            ], 200);
         }
-
-        $order = $order->fresh();
-
-        $paypalPlanId = null;
-        $monthlyUsd = null;
-        $recurringNote = null;
-
-        if ($this->paypal->isConfigured() && $order->status !== 'completed') {
-            $order = $this->paypal->prepareOrderForPayment($order);
-            $paypalPlanId = $order->paypal_billing_plan_id;
-            $monthlyUsd = $this->paypal->monthlyUsdForOrder($order);
-            $cycles = $this->paypal->totalCyclesForOrder($order);
-            $recurringNote = $cycles
-                ? "USD \${$monthlyUsd}/month for {$cycles} months (auto-billed)"
-                : "USD \${$monthlyUsd}/month recurring until you cancel on PayPal";
-        }
-
-        return view('dashboard.payment.paypal', array_merge($this->shared(), [
-            'order' => $order,
-            'formattedTotal' => $this->orders->formatAmount($order),
-            'paypal' => app(PayPalService::class)->config(),
-            'paypalPlanId' => $paypalPlanId,
-            'monthlyUsd' => $monthlyUsd,
-            'recurringNote' => $recurringNote,
-            'approveUrl' => route('dashboard.orders.paypal.approve', $order),
-            'activeNav' => 'dashboard.orders',
-        ]));
     }
 
     public function uploadProof(Request $request, Order $order)

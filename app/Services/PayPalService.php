@@ -128,33 +128,54 @@ class PayPalService
         $order->loadMissing(['plan', 'tool']);
 
         $entityType = $order->tool_id ? 'tool' : 'plan';
-        $entityId = $order->tool_id ?? $order->plan_id;
-        $monthlyUsd = $this->monthlyUsdForOrder($order);
-        $totalCycles = $this->totalCyclesForOrder($order);
+        $entityId = (int) ($order->tool_id ?? $order->plan_id ?? 0);
+        if ($entityId < 1) {
+            throw new RuntimeException('Order is missing a plan or tool for PayPal billing.');
+        }
+
+        $monthlyUsd = round((float) $this->monthlyUsdForOrder($order), 2);
+        $totalCycles = (int) ($this->totalCyclesForOrder($order) ?? 0);
+        $durationMonths = max(1, (int) $order->duration_months);
+        $name = $order->purchasedItemName().' — '.$durationMonths.' month(s)';
 
         $cached = PayPalBillingPlan::query()
             ->where('entity_type', $entityType)
             ->where('entity_id', $entityId)
-            ->where('duration_months', $order->duration_months)
-            ->where('amount_usd', $monthlyUsd)
+            ->where('duration_months', $durationMonths)
             ->where('total_cycles', $totalCycles)
+            ->whereRaw('ABS(amount_usd - ?) < 0.005', [$monthlyUsd])
             ->first();
 
         if ($cached) {
             return $cached->paypal_plan_id;
         }
 
-        $name = $order->purchasedItemName().' — '.$order->duration_months.' month(s)';
         $planId = $this->createBillingPlan($name, $monthlyUsd, $totalCycles);
 
-        PayPalBillingPlan::create([
-            'entity_type' => $entityType,
-            'entity_id' => $entityId,
-            'duration_months' => $order->duration_months,
-            'amount_usd' => $monthlyUsd,
-            'total_cycles' => $totalCycles,
-            'paypal_plan_id' => $planId,
-        ]);
+        try {
+            PayPalBillingPlan::create([
+                'entity_type' => $entityType,
+                'entity_id' => $entityId,
+                'duration_months' => $durationMonths,
+                'amount_usd' => $monthlyUsd,
+                'total_cycles' => $totalCycles,
+                'paypal_plan_id' => $planId,
+            ]);
+        } catch (\Throwable $e) {
+            $existing = PayPalBillingPlan::query()
+                ->where('entity_type', $entityType)
+                ->where('entity_id', $entityId)
+                ->where('duration_months', $durationMonths)
+                ->where('total_cycles', $totalCycles)
+                ->whereRaw('ABS(amount_usd - ?) < 0.005', [$monthlyUsd])
+                ->first();
+
+            if ($existing) {
+                return $existing->paypal_plan_id;
+            }
+
+            throw $e;
+        }
 
         return $planId;
     }
@@ -168,11 +189,19 @@ class PayPalService
 
     public function totalCyclesForOrder(Order $order): ?int
     {
-        return $order->duration_months > 1 ? (int) $order->duration_months : null;
+        // 1-month checkout = infinite monthly until cancelled (PayPal: total_cycles=0).
+        // Multi-month = fixed number of monthly charges.
+        return $order->duration_months > 1 ? (int) $order->duration_months : 0;
     }
 
     public function createBillingPlan(string $name, float $amountUsd, ?int $totalCycles = null): string
     {
+        if ($amountUsd < 0.01) {
+            throw new RuntimeException('PayPal amount must be at least $0.01.');
+        }
+
+        $cycles = $totalCycles ?? 0;
+
         $cycle = [
             'frequency' => [
                 'interval_unit' => 'MONTH',
@@ -180,6 +209,7 @@ class PayPalService
             ],
             'tenure_type' => 'REGULAR',
             'sequence' => 1,
+            'total_cycles' => $cycles,
             'pricing_scheme' => [
                 'fixed_price' => [
                     'value' => number_format($amountUsd, 2, '.', ''),
@@ -188,14 +218,10 @@ class PayPalService
             ],
         ];
 
-        if ($totalCycles) {
-            $cycle['total_cycles'] = $totalCycles;
-        }
-
         $response = $this->client()->post('/v1/billing/plans', [
             'product_id' => $this->productId(),
-            'name' => $name,
-            'description' => $name,
+            'name' => \Illuminate\Support\Str::limit($name, 120, ''),
+            'description' => \Illuminate\Support\Str::limit($name, 120, ''),
             'billing_cycles' => [$cycle],
             'payment_preferences' => [
                 'auto_bill_outstanding' => true,
@@ -209,10 +235,13 @@ class PayPalService
         }
 
         $planId = (string) $response->json('id');
+        $status = strtoupper((string) ($response->json('status') ?? ''));
 
-        $activate = $this->client()->post("/v1/billing/plans/{$planId}/activate");
-        if (! $activate->successful()) {
-            throw new RuntimeException('PayPal billing plan activation failed: '.$activate->body());
+        if ($status !== 'ACTIVE') {
+            $activate = $this->client()->post("/v1/billing/plans/{$planId}/activate");
+            if (! $activate->successful() && $activate->status() !== 422) {
+                throw new RuntimeException('PayPal billing plan activation failed: '.$activate->body());
+            }
         }
 
         return $planId;
@@ -264,6 +293,10 @@ class PayPalService
     {
         if ($order->payment_method !== 'paypal') {
             return $order;
+        }
+
+        if (! $this->isConfigured()) {
+            throw new RuntimeException('PayPal is not enabled or credentials are missing.');
         }
 
         if (! $order->paypal_billing_plan_id) {

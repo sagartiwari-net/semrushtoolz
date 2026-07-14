@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PayPalBillingPlan extends Model
 {
+    protected $table = 'paypal_billing_plans';
+
     protected $fillable = [
         'entity_type',
         'entity_id',

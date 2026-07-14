@@ -32,7 +32,11 @@
                     @endif
                 </div>
 
-                @if ($paypal['client_id'] && $paypalPlanId)
+                @if (! empty($paypalError))
+                    <div class="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                        {{ $paypalError }}
+                    </div>
+                @elseif ($paypal['client_id'] && $paypalPlanId)
                     <div id="paypal-button-container" class="min-h-[45px]"></div>
                     <p id="paypal-error" class="hidden rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger"></p>
                 @else
