@@ -127,16 +127,28 @@ class PayPalService
     {
         $order->loadMissing(['plan', 'tool']);
 
-        $entityType = $order->tool_id ? 'tool' : 'plan';
-        $entityId = (int) ($order->tool_id ?? $order->plan_id ?? 0);
-        if ($entityId < 1) {
-            throw new RuntimeException('Order is missing a plan or tool for PayPal billing.');
+        if ($order->isResellerBalanceTopup()) {
+            $entityType = 'reseller_topup';
+            $entityId = max(1, (int) round(((float) $order->total) * 100));
+            $monthlyUsd = round((float) $order->total, 2);
+            $totalCycles = 1;
+            $durationMonths = 1;
+            $name = 'Reseller Balance Top-up — $'.$monthlyUsd;
+        } else {
+            $entityType = $order->tool_id ? 'tool' : 'plan';
+            $entityId = (int) ($order->tool_id ?? $order->plan_id ?? 0);
+            if ($entityId < 1) {
+                throw new RuntimeException('Order is missing a plan or tool for PayPal billing.');
+            }
+            $monthlyUsd = round((float) $this->monthlyUsdForOrder($order), 2);
+            $totalCycles = (int) ($this->totalCyclesForOrder($order) ?? 0);
+            $durationMonths = max(1, (int) $order->duration_months);
+            $name = $order->purchasedItemName().' — '.$durationMonths.' month(s)';
         }
 
-        $monthlyUsd = round((float) $this->monthlyUsdForOrder($order), 2);
-        $totalCycles = (int) ($this->totalCyclesForOrder($order) ?? 0);
-        $durationMonths = max(1, (int) $order->duration_months);
-        $name = $order->purchasedItemName().' — '.$durationMonths.' month(s)';
+        $monthlyUsd = round((float) $monthlyUsd, 2);
+        $totalCycles = (int) $totalCycles;
+        $durationMonths = max(1, (int) $durationMonths);
 
         $cached = PayPalBillingPlan::query()
             ->where('entity_type', $entityType)
@@ -182,6 +194,10 @@ class PayPalService
 
     public function monthlyUsdForOrder(Order $order): float
     {
+        if ($order->isResellerBalanceTopup()) {
+            return round((float) $order->total, 2);
+        }
+
         $months = max(1, (int) $order->duration_months);
 
         return round((float) $order->total / $months, 2);
@@ -189,6 +205,10 @@ class PayPalService
 
     public function totalCyclesForOrder(Order $order): ?int
     {
+        if ($order->isResellerBalanceTopup()) {
+            return 1;
+        }
+
         // 1-month checkout = infinite monthly until cancelled (PayPal: total_cycles=0).
         // Multi-month = fixed number of monthly charges.
         return $order->duration_months > 1 ? (int) $order->duration_months : 0;
@@ -303,7 +323,7 @@ class PayPalService
             $planId = $this->billingPlanForOrder($order);
             $order->update([
                 'paypal_billing_plan_id' => $planId,
-                'is_recurring' => true,
+                'is_recurring' => ! $order->isResellerBalanceTopup(),
                 'currency' => 'usd',
             ]);
         }

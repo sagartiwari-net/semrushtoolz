@@ -10,10 +10,23 @@ class TablePageSize
 
     public const DEFAULT = 20;
 
-    public static function resolve(Request $request, string $key = 'per_page'): int
-    {
-        $value = (int) $request->query($key, self::DEFAULT);
+    /** Query keys that are page numbers (reset when per_page changes). */
+    public const PAGE_KEYS = [
+        'page',
+        'prov_page',
+        'ledger_page',
+        'request_page',
+        'users_page',
+        'upi_page',
+        'offline_page',
+        'cancelled_page',
+    ];
 
-        return in_array($value, self::OPTIONS, true) ? $value : self::DEFAULT;
+    public static function resolve(Request $request, ?int $default = null, string $key = 'per_page'): int
+    {
+        $default ??= self::DEFAULT;
+        $value = (int) $request->query($key, $default);
+
+        return in_array($value, self::OPTIONS, true) ? $value : $default;
     }
 }

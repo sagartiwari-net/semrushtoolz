@@ -136,7 +136,9 @@ class BuyahrefPaymentService
             'product' => [
                 'name' => $order->purchasedItemName(),
             ],
-            'return_url' => $this->absoluteRoute('dashboard.orders.payment.return', $order),
+            'return_url' => $order->isResellerBalanceTopup()
+                ? $this->absoluteRoute('reseller.balance.payment.return', $order)
+                : $this->absoluteRoute('dashboard.orders.payment.return', $order),
             'webhook_url' => $this->absoluteRoute('webhooks.buyahref'),
         ];
 

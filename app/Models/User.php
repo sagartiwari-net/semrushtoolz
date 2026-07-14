@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'phone', 'avatar_path', 'referral_code', 'status', 'referred_by_user_id', 'referral_bonus_expires_at', 'last_login_otp_at', 'preferences', 'wallet_balance'])]
+#[Fillable(['name', 'email', 'password', 'role', 'phone', 'avatar_path', 'referral_code', 'status', 'referred_by_user_id', 'created_by_reseller_id', 'referral_bonus_expires_at', 'last_login_otp_at', 'preferences', 'wallet_balance'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -110,6 +110,19 @@ class User extends Authenticatable implements MustVerifyEmail
         return in_array($this->role, ['admin', 'super_admin']);
     }
 
+    public function isReseller(): bool
+    {
+        return $this->role === 'reseller';
+    }
+
+    public function isActiveReseller(): bool
+    {
+        return $this->isReseller()
+            && $this->resellerProfile
+            && $this->resellerProfile->is_active
+            && ! $this->isBlocked();
+    }
+
     public function avatarUrl(): ?string
     {
         if (! filled($this->avatar_path)) {
@@ -117,6 +130,31 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return Storage::disk('public')->url($this->avatar_path);
+    }
+
+    public function resellerProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ResellerProfile::class);
+    }
+
+    public function resellerBalance(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ResellerBalance::class);
+    }
+
+    public function createdByReseller(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_reseller_id');
+    }
+
+    public function resellerCreatedUsers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(User::class, 'created_by_reseller_id');
+    }
+
+    public function resellerProvisions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ResellerProvision::class, 'reseller_user_id');
     }
 
     public function subscriptions(): \Illuminate\Database\Eloquent\Relations\HasMany

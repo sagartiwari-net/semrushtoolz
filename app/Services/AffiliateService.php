@@ -66,6 +66,10 @@ class AffiliateService
 
     public function createCommissionForOrder(Order $order): ?AffiliateCommission
     {
+        if ($order->isWalletTopup() || $order->isResellerBalanceTopup()) {
+            return null;
+        }
+
         $order->loadMissing('user');
         $user = $order->user;
 

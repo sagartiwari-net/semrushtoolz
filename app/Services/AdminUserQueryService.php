@@ -166,9 +166,10 @@ class AdminUserQueryService
         $cutoff = now()->subDays((int) config('security.purge_unverified_days', 7));
 
         return [
-            'total' => User::whereNull('email_verified_at')->where('role', 'user')->count(),
+            'total' => User::whereNull('email_verified_at')->where('role', 'user')->whereNull('created_by_reseller_id')->count(),
             'eligible_for_purge' => User::whereNull('email_verified_at')
                 ->where('role', 'user')
+                ->whereNull('created_by_reseller_id')
                 ->where('created_at', '<=', $cutoff)
                 ->whereDoesntHave('subscriptions', fn ($s) => $this->scopeActive($s))
                 ->whereDoesntHave('orders', fn ($o) => $o->where('status', 'completed'))

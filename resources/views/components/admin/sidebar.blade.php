@@ -24,10 +24,28 @@
         ['label' => 'Tickets', 'route' => 'admin.tickets', 'icon' => 'ticket', 'active' => 'admin.tickets'],
         ['label' => 'Security', 'route' => 'admin.security', 'icon' => 'shield', 'active' => 'admin.security*'],
         ['label' => 'Affiliates', 'route' => 'admin.affiliates', 'icon' => 'users', 'active' => 'admin.affiliates'],
+        ['label' => 'Resellers', 'route' => 'admin.resellers.index', 'icon' => 'users', 'active' => 'admin.resellers*'],
         ['label' => 'Coupons', 'route' => 'admin.coupons.index', 'icon' => 'coupon', 'active' => 'admin.coupons.*'],
         ['label' => 'Settings', 'route' => 'admin.settings', 'icon' => 'settings', 'active' => 'admin.settings'],
         ['label' => 'My Profile', 'route' => 'admin.profile', 'icon' => 'profile', 'active' => 'admin.profile'],
     ];
+
+    try {
+        $pendingBalanceRequests = \App\Models\ResellerBalanceRequest::query()
+            ->where('status', \App\Models\ResellerBalanceRequest::STATUS_PENDING)
+            ->count();
+        if ($pendingBalanceRequests > 0) {
+            foreach ($nav as $i => $item) {
+                if (($item['route'] ?? null) === 'admin.resellers.index') {
+                    $nav[$i]['label'] = 'Resellers ('.$pendingBalanceRequests.')';
+                    break;
+                }
+            }
+        }
+    } catch (\Throwable) {
+        // Tables may not exist until migrate runs.
+    }
+
     $authUser = auth()->user();
     $adminInitials = collect(explode(' ', $authUser?->name ?? 'Admin'))
         ->filter()

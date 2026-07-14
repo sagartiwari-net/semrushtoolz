@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\Plan;
+use App\Models\ResellerLedger;
 use App\Models\SiteSetting;
 use App\Models\Tool;
 use App\Models\User;
@@ -21,6 +22,7 @@ class OrderService
         protected TransactionalEmailService $transactionalMail,
         protected WalletService $wallet,
         protected WalletCashbackService $walletCashback,
+        protected ResellerBalanceService $resellerBalances,
     ) {}
 
     public function calculateTotals(Plan $plan, int $durationMonths, string $currency): array
@@ -269,6 +271,55 @@ class OrderService
         );
     }
 
+    /**
+     * Reseller prepaid balance top-up via UPI (INR). Cash / manual via admin request.
+     */
+    public function createResellerBalanceTopupOrder(User $reseller, float $creditInr, string $paymentMethod): Order
+    {
+        if (! $reseller->isReseller()) {
+            throw new \InvalidArgumentException('Only reseller accounts can create balance top-ups.');
+        }
+
+        $creditInr = round($creditInr, 2);
+        if ($creditInr < 1) {
+            throw new \InvalidArgumentException('Minimum top-up is ₹1.');
+        }
+
+        if ($paymentMethod !== 'upi') {
+            throw new \InvalidArgumentException('Reseller balance top-up supports UPI only. Use admin request for cash / manual credit.');
+        }
+
+        $totals = [
+            'subtotal' => $creditInr,
+            'discount' => 0,
+            'duration_discount' => 0,
+            'total' => $creditInr,
+            'discount_percent' => 0,
+            'per_month' => $creditInr,
+            'coupon' => null,
+            'coupon_code' => null,
+            'coupon_discount' => 0.0,
+            'referral_bonus_discount' => 0.0,
+            'referral_bonus_percent' => null,
+            'taxable_amount' => $creditInr,
+            'gst_rate' => null,
+            'gst_amount' => 0,
+        ];
+
+        $order = $this->storeOrder(
+            $reseller,
+            $totals,
+            1,
+            'inr',
+            'upi',
+            orderType: 'reseller_balance_topup',
+        );
+
+        $order->update(['balance_credit_inr' => $creditInr]);
+
+        return $order->fresh();
+    }
+
     protected function finalizeNewOrder(Order $order, string $paymentMethod): Order
     {
         if ($paymentMethod !== 'wallet') {
@@ -397,6 +448,29 @@ class OrderService
                 return $order;
             }
 
+            if ($order->isResellerBalanceTopup()) {
+                $order->loadMissing('user');
+                $credit = $order->creditAmountInr();
+                if ($credit <= 0) {
+                    throw new \RuntimeException('Invalid reseller balance credit amount.');
+                }
+
+                $this->resellerBalances->credit(
+                    $order->user,
+                    $credit,
+                    ResellerLedger::TYPE_CREDIT_PAYMENT,
+                    [
+                        'order_id' => $order->id,
+                        'order_number' => $order->order_number,
+                        'payment_method' => $order->payment_method,
+                        'charged_total' => (float) $order->total,
+                        'charged_currency' => $order->currency,
+                    ],
+                );
+
+                return $order->fresh();
+            }
+
             $subscription = $this->subscriptions->activateFromOrder($order);
             $this->affiliates->createCommissionForOrder($order);
 
@@ -435,6 +509,14 @@ class OrderService
 
     public function paymentRoute(Order $order): string
     {
+        if ($order->isResellerBalanceTopup()) {
+            if ($order->payment_method === 'upi') {
+                return route('reseller.balance.pay.upi', $order);
+            }
+
+            return route('reseller.balance.pay.paypal', $order);
+        }
+
         if ($order->payment_method === 'wallet' || $order->status === 'completed') {
             return route('dashboard.orders.show', $order);
         }
@@ -505,8 +587,8 @@ class OrderService
             throw new \RuntimeException('Only completed orders can have access revoked.');
         }
 
-        if ($order->isWalletTopup()) {
-            throw new \RuntimeException('Wallet top-up orders do not have a subscription.');
+        if ($order->isWalletTopup() || $order->isResellerBalanceTopup()) {
+            throw new \RuntimeException('Balance top-up orders do not have a subscription.');
         }
 
         $subscription = $this->subscriptions->findActiveForOrder($order);

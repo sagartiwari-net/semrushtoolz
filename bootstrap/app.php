@@ -25,6 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'device.bind' => \App\Http\Middleware\BindDeviceSession::class,
             'user.blocked' => \App\Http\Middleware\CheckUserBlocked::class,
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
+            'reseller' => \App\Http\Middleware\EnsureReseller::class,
+            'block.reseller' => \App\Http\Middleware\BlockResellerFromDashboard::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         ]);
 

@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\ExtensionSettingsController;
 use App\Http\Controllers\Admin\HomepageController;
 use App\Http\Controllers\Admin\LegalPageController;
 use App\Http\Controllers\Admin\PaymentIntegrationController;
+use App\Http\Controllers\Admin\ResellerController as AdminResellerController;
+use App\Http\Controllers\Admin\ResellerPricingController as AdminResellerPricingController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PlanController;
@@ -36,6 +38,14 @@ use App\Http\Controllers\Dashboard\ToolController;
 use App\Http\Controllers\Dashboard\UserSettingsController;
 use App\Http\Controllers\Dashboard\WalletController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Reseller\BalanceController as ResellerBalanceController;
+use App\Http\Controllers\Reseller\CancelController as ResellerCancelController;
+use App\Http\Controllers\Reseller\DashboardController as ResellerDashboardController;
+use App\Http\Controllers\Reseller\PaymentController as ResellerPaymentController;
+use App\Http\Controllers\Reseller\ProfileController as ResellerProfileController;
+use App\Http\Controllers\Reseller\ProvisionController as ResellerProvisionController;
+use App\Http\Controllers\Reseller\ReportController as ResellerReportController;
+use App\Http\Controllers\Reseller\UserController as ResellerUserController;
 use App\Http\Controllers\SubscribeController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\BuyahrefWebhookController;
@@ -104,7 +114,7 @@ Route::post('/email/verification-notification', [EmailVerificationController::cl
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-Route::prefix('dashboard')->name('dashboard.')->middleware(['auth', 'verified', 'user.blocked', 'device.bind', 'dashboard.track'])->group(function () {
+Route::prefix('dashboard')->name('dashboard.')->middleware(['auth', 'verified', 'user.blocked', 'block.reseller', 'device.bind', 'dashboard.track'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('index');
     Route::get('/activity', [DashboardController::class, 'activity'])->name('activity');
     Route::get('/shop', [DashboardController::class, 'shop'])->name('shop');
@@ -268,6 +278,24 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/affiliates/payouts/{payout}/reject', [AdminAffiliateController::class, 'reject'])->name('affiliates.payout.reject');
         Route::post('/affiliates/commissions/{commission}/approve', [AdminAffiliateController::class, 'approveCommission'])->name('affiliates.commission.approve');
         Route::post('/affiliates/commissions/{commission}/reject', [AdminAffiliateController::class, 'rejectCommission'])->name('affiliates.commission.reject');
+
+        Route::get('/resellers', [AdminResellerController::class, 'index'])->name('resellers.index');
+        Route::get('/resellers/create', [AdminResellerController::class, 'create'])->name('resellers.create');
+        Route::post('/resellers', [AdminResellerController::class, 'store'])->name('resellers.store');
+        Route::get('/resellers/pricing', [AdminResellerPricingController::class, 'edit'])->name('resellers.pricing.edit');
+        Route::put('/resellers/pricing', [AdminResellerPricingController::class, 'update'])->name('resellers.pricing.update');
+        Route::get('/resellers/requests', [AdminResellerController::class, 'requests'])->name('resellers.requests');
+        Route::post('/resellers/requests/{balanceRequest}/approve', [AdminResellerController::class, 'approveRequest'])->name('resellers.requests.approve');
+        Route::post('/resellers/requests/{balanceRequest}/reject', [AdminResellerController::class, 'rejectRequest'])->name('resellers.requests.reject');
+        Route::get('/resellers/reports', [AdminResellerController::class, 'reports'])->name('resellers.reports');
+        Route::get('/resellers/{reseller}', [AdminResellerController::class, 'show'])->name('resellers.show');
+        Route::get('/resellers/{reseller}/edit', [AdminResellerController::class, 'edit'])->name('resellers.edit');
+        Route::put('/resellers/{reseller}', [AdminResellerController::class, 'update'])->name('resellers.update');
+        Route::post('/resellers/{reseller}/credit', [AdminResellerController::class, 'credit'])->name('resellers.credit');
+        Route::post('/resellers/{reseller}/tool-pricing', [AdminResellerController::class, 'updatePricing'])->name('resellers.tool-pricing.update');
+        Route::post('/resellers/{reseller}/provisions/{provision}/cancel', [AdminResellerController::class, 'cancelProvision'])->name('resellers.provisions.cancel');
+        Route::delete('/resellers/{reseller}', [AdminResellerController::class, 'destroy'])->name('resellers.destroy');
+
         Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
         Route::get('/coupons/create', [CouponController::class, 'create'])->name('coupons.create');
         Route::post('/coupons', [CouponController::class, 'store'])->name('coupons.store');
@@ -303,4 +331,32 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/security/sessions/{sessionId}', [SecurityController::class, 'killSession'])->name('security.sessions.destroy');
         Route::post('/security/alerts/{alert}/resolve', [SecurityController::class, 'resolveAlert'])->name('security.resolve');
     });
+});
+
+Route::prefix('reseller')->name('reseller.')->middleware(['auth', 'user.blocked', 'reseller'])->group(function () {
+    Route::get('/', [ResellerDashboardController::class, 'index'])->name('index');
+
+    Route::get('/profile', [ResellerProfileController::class, 'edit'])->name('profile');
+    Route::put('/profile', [ResellerProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/password', [ResellerProfileController::class, 'updatePassword'])->name('profile.password');
+
+    Route::get('/provision', [ResellerProvisionController::class, 'create'])->name('provision.create');
+    Route::post('/provision', [ResellerProvisionController::class, 'store'])->middleware('throttle:20,1')->name('provision.store');
+    Route::post('/provision/preview', [ResellerProvisionController::class, 'previewCharge'])->middleware('throttle:60,1')->name('provision.preview');
+
+    Route::get('/users', [ResellerUserController::class, 'index'])->name('users.index');
+    Route::get('/password-reset', [ResellerUserController::class, 'resetPasswordForm'])->name('password.create');
+    Route::post('/password-reset', [ResellerUserController::class, 'resetPassword'])->middleware('throttle:10,1')->name('password.store');
+
+    Route::get('/balance', [ResellerBalanceController::class, 'index'])->name('balance.index');
+    Route::post('/balance/pay', [ResellerBalanceController::class, 'pay'])->middleware('throttle:20,1')->name('balance.pay');
+    Route::post('/balance/request', [ResellerBalanceController::class, 'requestTopUp'])->middleware('throttle:10,1')->name('balance.request');
+    Route::get('/balance/orders/{order}/pay/upi', [ResellerPaymentController::class, 'payUpi'])->name('balance.pay.upi');
+    Route::get('/balance/orders/{order}/payment/return', [ResellerPaymentController::class, 'paymentReturn'])->name('balance.payment.return');
+    Route::get('/balance/orders/{order}/pay/paypal', [ResellerPaymentController::class, 'payPaypal'])->name('balance.pay.paypal');
+    Route::post('/balance/orders/{order}/paypal/approve', [ResellerPaymentController::class, 'approvePaypal'])->middleware('throttle:30,1')->name('balance.paypal.approve');
+    Route::get('/balance/orders/{order}/status', [ResellerPaymentController::class, 'status'])->name('balance.pay.status');
+
+    Route::get('/reports', [ResellerReportController::class, 'index'])->name('reports.index');
+    Route::post('/provisions/{provision}/cancel', [ResellerCancelController::class, 'destroy'])->middleware('throttle:20,1')->name('provisions.cancel');
 });

@@ -23,6 +23,7 @@ class UserPurgeService
         return User::query()
             ->where('role', 'user')
             ->whereNull('email_verified_at')
+            ->whereNull('created_by_reseller_id')
             ->where('created_at', '<=', $cutoff)
             ->whereDoesntHave('subscriptions', fn ($s) => $this->queries->scopeActive($s))
             ->whereDoesntHave('orders', fn ($o) => $o->where('status', 'completed'));
@@ -30,7 +31,7 @@ class UserPurgeService
 
     public function canPurge(User $user, bool $requireEligibleAge = true): bool
     {
-        if ($user->role !== 'user' || $user->email_verified_at) {
+        if ($user->role !== 'user' || $user->email_verified_at || $user->created_by_reseller_id) {
             return false;
         }
 

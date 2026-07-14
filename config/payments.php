@@ -3,6 +3,9 @@
 return [
     'order_expiry_minutes' => 30,
 
+    /** INR credited per 1 USD when reseller tops up via PayPal (legacy) */
+    'reseller_inr_per_usd' => (float) env('RESELLER_INR_PER_USD', 83),
+
     'upi' => [
         'id' => env('UPI_ID', 'semrushtoolz@paytm'),
         'name' => env('UPI_NAME', 'Semrushtoolz'),

@@ -30,6 +30,17 @@ class AuthLoginService
             return redirect()->intended(route('admin.index'));
         }
 
+        if ($user->isReseller()) {
+            if (! $user->isActiveReseller()) {
+                Auth::logout();
+
+                return redirect()->route('login')
+                    ->withErrors(['email' => 'Your reseller account is inactive. Contact admin.']);
+            }
+
+            return redirect()->intended(route('reseller.index'));
+        }
+
         return redirect()->intended(route('dashboard.index'));
     }
 
@@ -39,6 +50,21 @@ class AuthLoginService
             Auth::logout();
 
             return back()->withErrors(['email' => 'Your account has been blocked. Contact support.']);
+        }
+
+        // Resellers skip email-verification gate + periodic OTP (admin-managed accounts).
+        if ($user->isReseller()) {
+            if (! $user->email_verified_at) {
+                $user->forceFill(['email_verified_at' => now()])->save();
+            }
+
+            $request->session()->regenerate();
+
+            if ($error = $this->finalizeAuthenticatedSession($user, $request)) {
+                return $error;
+            }
+
+            return $this->redirectAfterLogin($user);
         }
 
         if (! $user->hasVerifiedEmail()) {

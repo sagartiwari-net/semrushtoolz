@@ -170,7 +170,7 @@ class SubscriptionService
 
     public function findActiveForOrder(Order $order): ?Subscription
     {
-        if (! $order->user_id || $order->isWalletTopup()) {
+        if (! $order->user_id || $order->isWalletTopup() || $order->isResellerBalanceTopup()) {
             return null;
         }
 

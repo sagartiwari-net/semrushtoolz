@@ -22,6 +22,17 @@ class RedirectIfAuthenticated
                 return redirect()->route('admin.index');
             }
 
+            if ($user->isReseller()) {
+                if ($user->isActiveReseller()) {
+                    return redirect()->route('reseller.index');
+                }
+
+                Auth::logout();
+
+                return redirect()->route('login')
+                    ->withErrors(['email' => 'Your reseller account is inactive. Contact admin.']);
+            }
+
             return redirect()->route('dashboard.index');
         }
 
