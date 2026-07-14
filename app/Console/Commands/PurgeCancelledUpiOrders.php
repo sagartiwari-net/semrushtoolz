@@ -9,30 +9,31 @@ class PurgeCancelledUpiOrders extends Command
 {
     protected $signature = 'orders:purge-cancelled-upi {--days=3 : Days after cancel/reject before deletion} {--dry-run : List only, do not delete}';
 
-    protected $description = 'Permanently delete cancelled and rejected orders older than N days';
+    protected $description = 'Permanently delete cancelled and rejected orders whose order date is older than N days';
 
     public function handle(): int
     {
         $days = max(1, (int) $this->option('days'));
-        $cutoff = now()->subDays($days);
+        // Match admin Orders "Date" column (created_at), not last updated_at.
+        $cutoffDate = now()->subDays($days)->toDateString();
 
         $query = Order::query()
             ->whereIn('status', ['cancelled', 'rejected'])
-            ->where('updated_at', '<=', $cutoff);
+            ->whereDate('created_at', '<=', $cutoffDate);
 
         if ($this->option('dry-run')) {
-            $orders = $query->orderBy('updated_at')->get(['id', 'order_number', 'status', 'payment_method', 'updated_at']);
+            $orders = $query->orderBy('created_at')->get(['id', 'order_number', 'status', 'payment_method', 'created_at', 'updated_at']);
 
             if ($orders->isEmpty()) {
-                $this->info("No cancelled/rejected orders older than {$days} day(s).");
+                $this->info("No cancelled/rejected orders with order date on or before {$cutoffDate}.");
 
                 return self::SUCCESS;
             }
 
-            $this->info("Found {$orders->count()} order(s) older than {$days} day(s).");
+            $this->info("Found {$orders->count()} order(s) with order date on or before {$cutoffDate} (older than {$days} day(s)).");
 
             foreach ($orders as $order) {
-                $this->line("  [dry-run] {$order->order_number} ({$order->status}, {$order->payment_method}, {$order->updated_at->toDateTimeString()})");
+                $this->line("  [dry-run] {$order->order_number} ({$order->status}, {$order->payment_method}, ordered {$order->created_at->toDateString()})");
             }
 
             return self::SUCCESS;
