@@ -174,14 +174,26 @@
                 <form method="POST" action="{{ route('admin.users.subscriptions.grant', $user) }}" class="dash-card rounded-xl border border-dashed border-line">
                     @csrf
                     <input type="hidden" name="tab" value="subscriptions">
-                    <p class="mb-3 text-sm font-semibold text-ink">Manually activate plan</p>
+                    <p class="mb-3 text-sm font-semibold text-ink">Manually activate access</p>
+                    <p class="mb-3 text-xs text-ink-muted">Combo/trial = Plans. Individual Semrush, Site Audit, Ahrefs, etc. = Shop tools.</p>
                     <div class="grid gap-3 sm:grid-cols-3">
                         <div class="sm:col-span-2">
-                            <label class="ui-label">Plan</label>
-                            <select class="ui-input" name="plan_id" required>
-                                @foreach ($plans as $plan)
-                                    <option value="{{ $plan->id }}">{{ $plan->name }} (₹{{ number_format($plan->price_inr) }})</option>
-                                @endforeach
+                            <label class="ui-label">Plan or tool</label>
+                            <select class="ui-input" name="grant" required>
+                                @if ($plans->isNotEmpty())
+                                    <optgroup label="Plans (bundles)">
+                                        @foreach ($plans as $plan)
+                                            <option value="plan:{{ $plan->id }}">{{ $plan->name }} (₹{{ number_format($plan->price_inr) }})</option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+                                @if (($shopTools ?? collect())->isNotEmpty())
+                                    <optgroup label="Individual tools">
+                                        @foreach ($shopTools as $tool)
+                                            <option value="tool:{{ $tool->id }}">{{ $tool->name }} (₹{{ number_format($tool->price_inr) }})</option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
                             </select>
                         </div>
                         <div>
@@ -193,7 +205,7 @@
                             <input class="ui-input" type="number" name="duration_days" min="1" max="90" placeholder="Optional">
                         </div>
                     </div>
-                    <button type="submit" class="ui-btn-primary mt-3">Activate plan</button>
+                    <button type="submit" class="ui-btn-primary mt-3">Activate access</button>
                 </form>
 
                 <div class="dash-card">

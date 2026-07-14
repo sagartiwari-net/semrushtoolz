@@ -53,6 +53,14 @@ return [
                     ],
                 ],
                 [
+                    'title' => 'Site Audit only',
+                    'buttons' => [
+                        ['type' => 'proxy', 'slug' => 'nnxsite1', 'label' => 'Access Site Audit 1'],
+                        ['type' => 'proxy', 'slug' => 'nnxsite2', 'label' => 'Access Site Audit 2'],
+                        ['type' => 'proxy', 'slug' => 'nazsite1', 'label' => 'Access Site Audit 3'],
+                    ],
+                ],
+                [
                     'title' => 'For Export only',
                     'buttons' => [
                         [

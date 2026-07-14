@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\Plan;
 use App\Models\Subscription;
+use App\Models\Tool;
 use App\Models\User;
 use App\Services\AdminUserService;
 use App\Services\SecurityMonitorService;
@@ -74,25 +75,36 @@ class UserController extends Controller
     public function grantSubscription(Request $request, User $user)
     {
         $data = $request->validate([
-            'plan_id' => ['required', 'exists:plans,id'],
+            'grant' => ['required', 'string', 'regex:/^(plan|tool):\d+$/'],
             'duration_months' => ['nullable', 'integer', 'min:1', 'max:24', 'required_without:duration_days'],
             'duration_days' => ['nullable', 'integer', 'min:1', 'max:90', 'required_without:duration_months'],
         ]);
 
-        $plan = Plan::findOrFail($data['plan_id']);
+        [$type, $id] = explode(':', $data['grant'], 2);
+        $months = (int) ($data['duration_months'] ?? 1);
+        $days = isset($data['duration_days']) ? (int) $data['duration_days'] : null;
 
-        if ($plan->isTrial() && empty($data['duration_days'])) {
-            return back()->with('error', 'Trial plans need duration in days.');
+        if ($type === 'plan') {
+            $plan = Plan::findOrFail($id);
+
+            if ($plan->isTrial() && empty($data['duration_days'])) {
+                return back()->with('error', 'Trial plans need duration in days.');
+            }
+
+            $this->users->grantSubscription($user, $plan, $months, $days);
+
+            return back()->with('success', "Plan “{$plan->name}” activated for {$user->name}.");
         }
 
-        $this->users->grantSubscription(
-            $user,
-            $plan,
-            (int) ($data['duration_months'] ?? 1),
-            isset($data['duration_days']) ? (int) $data['duration_days'] : null,
-        );
+        $tool = Tool::query()
+            ->whereKey($id)
+            ->where('is_active', true)
+            ->where('show_in_shop', true)
+            ->firstOrFail();
 
-        return back()->with('success', "Plan “{$plan->name}” activated for {$user->name}.");
+        $this->users->grantToolSubscription($user, $tool, $months, $days);
+
+        return back()->with('success', "Tool “{$tool->name}” activated for {$user->name}.");
     }
 
     public function extendSubscription(Request $request, User $user, Subscription $subscription)

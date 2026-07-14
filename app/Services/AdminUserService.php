@@ -6,6 +6,7 @@ use App\Models\AffiliateCommission;
 use App\Models\AffiliatePayout;
 use App\Models\Order;
 use App\Models\Plan;
+use App\Models\Tool;
 use App\Models\User;
 use App\Models\UserLoginLog;
 use App\Support\TablePageSize;
@@ -129,6 +130,13 @@ class AdminUserService
             'referredBy' => $referredBy,
             'referralCommission' => $wasReferred,
             'plans' => Plan::where('is_active', true)->orderBy('sort_order')->get(),
+            'shopTools' => Tool::query()
+                ->where('is_active', true)
+                ->where('show_in_shop', true)
+                ->orderBy('sort_order')
+                ->get(['id', 'name', 'slug', 'price_inr', 'grants_tool_slugs'])
+                ->reject(fn (Tool $tool) => $tool->isPackageGrant())
+                ->values(),
             'ordersCount' => Order::where('user_id', $user->id)->count(),
             'accessLogsCount' => UserLoginLog::where('user_id', $user->id)->count(),
             'referralsCount' => User::where('referred_by_user_id', $user->id)->count(),
@@ -155,6 +163,28 @@ class AdminUserService
         return \App\Models\Subscription::create([
             'user_id' => $user->id,
             'plan_id' => $plan->id,
+            'tool_id' => null,
+            'status' => 'active',
+            'duration_months' => $durationDays ? 0 : $durationMonths,
+            'duration_days' => $durationDays,
+            'currency' => 'inr',
+            'amount_paid' => 0,
+            'starts_at' => now(),
+            'ends_at' => $endsAt,
+            'auto_renew' => false,
+        ]);
+    }
+
+    public function grantToolSubscription(User $user, Tool $tool, int $durationMonths, ?int $durationDays = null): \App\Models\Subscription
+    {
+        $endsAt = $durationDays
+            ? now()->addDays($durationDays)
+            : now()->addMonths(max(1, $durationMonths));
+
+        return \App\Models\Subscription::create([
+            'user_id' => $user->id,
+            'plan_id' => null,
+            'tool_id' => $tool->id,
             'status' => 'active',
             'duration_months' => $durationDays ? 0 : $durationMonths,
             'duration_days' => $durationDays,

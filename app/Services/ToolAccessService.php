@@ -46,7 +46,18 @@ class ToolAccessService
             ->where('is_active', true)
             ->first();
 
-        return $group?->slug;
+        if ($group) {
+            return $group->slug;
+        }
+
+        // Shop variants like Semrush Site Audit grant Semrush → open that hub.
+        $tool = Tool::where('slug', $toolSlug)->first();
+        $granted = trim((string) ($tool?->grants_tool_slug ?? ''));
+        if ($granted !== '' && $granted !== $toolSlug) {
+            return $this->hubSlugForTool($granted);
+        }
+
+        return null;
     }
 
     public function endSession(ToolSession $session, string $reason = 'user_ended'): void
