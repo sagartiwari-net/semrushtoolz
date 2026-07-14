@@ -50,7 +50,12 @@ class ToolAccessService
             return $group->slug;
         }
 
-        // Shop variants like Semrush Site Audit grant Semrush → open that hub.
+        // Ahrefs plan tiers (and similar) grant a parent hub tool without their own hub page.
+        // Site Audit has its own hub — do not fall back for it.
+        if ($toolSlug === 'semrush_site_audit') {
+            return null;
+        }
+
         $tool = Tool::where('slug', $toolSlug)->first();
         $granted = trim((string) ($tool?->grants_tool_slug ?? ''));
         if ($granted !== '' && $granted !== $toolSlug) {

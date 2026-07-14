@@ -52,22 +52,21 @@ return [
                         ['type' => 'proxy', 'slug' => 'ntbsm2', 'label' => 'Access Semrush 11'],
                     ],
                 ],
+            ],
+        ],
+
+        'semrush_site_audit' => [
+            'title' => 'Semrush Site Audit Access',
+            'subtitle' => 'Site Audit servers only. Choose a server below if one is busy.',
+            'grant' => 'semrush_site_audit',
+            'logo' => 'https://ik.imagekit.io/webfiles/semrush.svg?updatedAt=1771433645768',
+            'sections' => [
                 [
-                    'title' => 'Site Audit only',
+                    'title' => null,
                     'buttons' => [
                         ['type' => 'proxy', 'slug' => 'nnxsite1', 'label' => 'Access Site Audit 1'],
                         ['type' => 'proxy', 'slug' => 'nnxsite2', 'label' => 'Access Site Audit 2'],
                         ['type' => 'proxy', 'slug' => 'nazsite1', 'label' => 'Access Site Audit 3'],
-                    ],
-                ],
-                [
-                    'title' => 'For Export only',
-                    'buttons' => [
-                        [
-                            'type' => 'direct',
-                            'url' => env('TOOL_EXPORT_URL_SEMRUSH', 'https://6.semrush.com.in/analytics/overview/?searchType=domain'),
-                            'label' => 'Access Export Only',
-                        ],
                     ],
                 ],
             ],
@@ -107,16 +106,16 @@ return [
         'nnxsm4' => ['group' => 'semrush', 'website_id' => 13, 'domain' => 'nnxsm4.1clkaccess.store', 'secret_key' => $semrushSecret],
         'nnxsm5' => ['group' => 'semrush', 'website_id' => 14, 'domain' => 'nnxsm5.1clkaccess.store', 'secret_key' => $semrushSecret],
         'nnxsm6' => ['group' => 'semrush', 'website_id' => 15, 'domain' => 'nnxsm6.1clkaccess.store', 'secret_key' => $semrushSecret],
-        'nnxsite1' => ['group' => 'semrush', 'website_id' => 16, 'domain' => 'nnxsite1.1clkaccess.store', 'secret_key' => $semrushSecret],
-        'nnxsite2' => ['group' => 'semrush', 'website_id' => 17, 'domain' => 'nnxsite3.1clkaccess.store', 'secret_key' => $semrushSecret],
-        'nnxsite3' => ['group' => 'semrush', 'website_id' => 18, 'domain' => 'nnxsite3.1clkaccess.store', 'secret_key' => $semrushSecret],
+        'nnxsite1' => ['group' => 'semrush_site_audit', 'website_id' => 16, 'domain' => 'nnxsite1.1clkaccess.store', 'secret_key' => $semrushSecret],
+        'nnxsite2' => ['group' => 'semrush_site_audit', 'website_id' => 17, 'domain' => 'nnxsite3.1clkaccess.store', 'secret_key' => $semrushSecret],
+        'nnxsite3' => ['group' => 'semrush_site_audit', 'website_id' => 18, 'domain' => 'nnxsite3.1clkaccess.store', 'secret_key' => $semrushSecret],
         'nazsm1' => ['group' => 'semrush', 'website_id' => 20, 'domain' => 'nazsm1.1clkaccess.store', 'secret_key' => $semrushSecret],
         'nazsm2' => ['group' => 'semrush', 'website_id' => 21, 'domain' => 'nazsm2.1clkaccess.store', 'secret_key' => $semrushSecret],
         'nazsm3' => ['group' => 'semrush', 'website_id' => 22, 'domain' => 'nazsm3.1clkaccess.store', 'secret_key' => $semrushSecret],
-        'nazsite1' => ['group' => 'semrush', 'website_id' => 25, 'domain' => 'nazsite1.1clkaccess.store', 'secret_key' => $semrushSecret],
+        'nazsite1' => ['group' => 'semrush_site_audit', 'website_id' => 25, 'domain' => 'nazsite1.1clkaccess.store', 'secret_key' => $semrushSecret],
         'ntbsm1' => ['group' => 'semrush', 'website_id' => 26, 'domain' => 'ntbsm1.1clkaccess.store', 'secret_key' => $semrushSecret],
         'ntbsm2' => ['group' => 'semrush', 'website_id' => 28, 'domain' => 'ntbsm2.1clkaccess.store', 'secret_key' => $semrushSecret],
-        'ntbsite1' => ['group' => 'semrush', 'website_id' => 29, 'domain' => 'ntbsite1.1clkaccess.store', 'secret_key' => $semrushSecret],
+        'ntbsite1' => ['group' => 'semrush_site_audit', 'website_id' => 29, 'domain' => 'ntbsite1.1clkaccess.store', 'secret_key' => $semrushSecret],
         'semrush' => [
             'group' => 'semrush',
             'website_id' => 49,

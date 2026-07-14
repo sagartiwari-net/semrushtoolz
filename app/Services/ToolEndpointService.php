@@ -168,6 +168,7 @@ class ToolEndpointService
 
         return match ($groupSlug) {
             'ahrefs' => env('TOOL_SECRET_AHREFS', 'toolsmandi_ahrefs_secret_xyz123'),
+            'semrush_site_audit' => env('TOOL_SECRET_SEMRUSH', 'toolsmandi_recloudsemrush_secret_xyz123'),
             default => env('TOOL_SECRET_SEMRUSH', 'toolsmandi_recloudsemrush_secret_xyz123'),
         };
     }

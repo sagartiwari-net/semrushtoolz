@@ -16,6 +16,15 @@ class ToolAccessSeeder extends Seeder
         $groups = config('tool_endpoints.groups', []);
         $endpoints = config('tool_endpoints.endpoints', []);
 
+        $sortOrders = [
+            'semrush' => 1,
+            'semrush_site_audit' => 2,
+            'ahrefs' => 3,
+            'ahrefs_bar' => 4,
+        ];
+
+        $activeSlugs = [];
+
         foreach ($groups as $slug => $group) {
             $tool = isset($group['grant'])
                 ? \App\Models\Tool::where('slug', $group['grant'])->first()
@@ -29,7 +38,7 @@ class ToolAccessSeeder extends Seeder
                     'subtitle' => $group['subtitle'] ?? null,
                     'logo_url' => $group['logo'] ?? null,
                     'grant' => $group['grant'] ?? $slug,
-                    'sort_order' => $slug === 'semrush' ? 1 : 2,
+                    'sort_order' => $sortOrders[$slug] ?? 99,
                     'is_active' => true,
                 ]
             );
@@ -41,6 +50,7 @@ class ToolAccessSeeder extends Seeder
                     $type = $button['type'] ?? 'proxy';
                     $slugKey = $button['slug'] ?? 'direct-'.$order;
                     $endpoint = $endpoints[$slugKey] ?? [];
+                    $activeSlugs[] = $slugKey;
 
                     $defaults = [
                         'tool_access_group_id' => $model->id,
@@ -58,11 +68,13 @@ class ToolAccessSeeder extends Seeder
                     $server = ToolAccessServer::where('slug', $slugKey)->first();
 
                     if ($server) {
-                        // Keep admin-edited connection settings; only sync layout metadata.
+                        // Keep admin-edited connection settings; sync layout + group placement.
                         $server->update([
                             'tool_access_group_id' => $defaults['tool_access_group_id'],
+                            'label' => $defaults['label'],
                             'section_title' => $defaults['section_title'],
                             'sort_order' => $defaults['sort_order'],
+                            'is_active' => true,
                         ]);
                     } else {
                         ToolAccessServer::create(array_merge(['slug' => $slugKey], $defaults));
@@ -70,6 +82,21 @@ class ToolAccessSeeder extends Seeder
                 }
             }
         }
+
+        // Hide Export Only buttons for now (any leftover direct export links).
+        ToolAccessServer::query()
+            ->where(function ($q) {
+                $q->where('section_title', 'For Export only')
+                    ->orWhere('label', 'like', '%Export Only%')
+                    ->orWhere('label', 'like', '%Export only%');
+            })
+            ->update(['is_active' => false]);
+
+        // Hide Site Audit servers that are not part of the current Site Audit hub layout.
+        ToolAccessServer::query()
+            ->whereIn('slug', ['nnxsite3', 'ntbsite1'])
+            ->whereNotIn('slug', $activeSlugs)
+            ->update(['is_active' => false]);
 
         $ahrefsBar = \App\Models\Tool::where('slug', 'ahrefs_bar')->first();
         if ($ahrefsBar) {
@@ -81,7 +108,7 @@ class ToolAccessSeeder extends Seeder
                     'subtitle' => 'WhatsApp activation for browser extension',
                     'logo_url' => $ahrefsBar->logo_url,
                     'grant' => 'ahrefs_bar',
-                    'sort_order' => 3,
+                    'sort_order' => $sortOrders['ahrefs_bar'],
                     'is_active' => true,
                 ]
             );
