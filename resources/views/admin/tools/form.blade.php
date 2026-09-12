@@ -139,16 +139,23 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
-            <button class="ui-btn-primary">Save Tool</button>
-            @if ($tool->exists)
-                <form method="POST" action="{{ route('admin.tools.destroy', $tool) }}" onsubmit="return confirm('Delete tool {{ $tool->name }}? This also removes its access group and servers.')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="ui-btn-ghost text-danger">Delete tool</button>
-                </form>
-            @endif
+            <button type="submit" class="ui-btn-primary">Save Tool</button>
         </div>
     </form>
+
+    {{-- Delete MUST stay outside the save form. Nested forms make browsers submit DELETE on Save. --}}
+    @if ($tool->exists)
+        <form method="POST" action="{{ route('admin.tools.destroy', $tool) }}" class="mt-6 max-w-2xl rounded-xl border border-danger/30 bg-danger/5 p-4"
+              onsubmit="return confirm('Permanently delete tool {{ $tool->name }}? Access group/servers will also be removed. Subscriptions stay, but tool link may break.')">
+            @csrf
+            @method('DELETE')
+            <label class="ui-label text-danger">Type the tool name to confirm delete</label>
+            <div class="mt-2 flex flex-wrap items-end gap-3">
+                <input class="ui-input max-w-xs" name="confirm_name" placeholder="{{ $tool->name }}" required autocomplete="off">
+                <button type="submit" class="ui-btn-ghost text-danger">Delete tool</button>
+            </div>
+        </form>
+    @endif
 
     <script>
         const typeSelect = document.getElementById('access-type');

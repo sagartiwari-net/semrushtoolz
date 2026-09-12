@@ -83,8 +83,16 @@ class ToolCatalogController extends Controller
         return back()->with('success', 'Tool status updated.');
     }
 
-    public function destroy(Tool $tool)
+    public function destroy(Request $request, Tool $tool)
     {
+        $request->validate([
+            'confirm_name' => ['required', 'string'],
+        ]);
+
+        if (trim((string) $request->input('confirm_name')) !== $tool->name) {
+            return back()->with('error', 'Tool was not deleted — confirmation name did not match.');
+        }
+
         $slug = $tool->slug;
         $name = $tool->name;
 
