@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AffiliateController as AdminAffiliateController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\EmailPresetController;
 use App\Http\Controllers\Admin\EmailSettingsController;
+use App\Http\Controllers\Admin\EarningsReportController;
 use App\Http\Controllers\Admin\ExtensionSettingsController;
 use App\Http\Controllers\Admin\HomepageController;
 use App\Http\Controllers\Admin\LegalPageController;
@@ -261,6 +262,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/orders/{order}/revoke-access', [AdminOrderController::class, 'revokeAccess'])->name('orders.revoke-access');
         Route::post('/orders/{order}/reject', [AdminOrderController::class, 'reject'])->name('orders.reject');
         Route::get('/payments', [AdminController::class, 'payments'])->name('payments');
+        Route::get('/earnings', [EarningsReportController::class, 'index'])->name('earnings');
+        Route::get('/earnings/export/csv', [EarningsReportController::class, 'export'])->name('earnings.export');
         Route::get('/wallet', [AdminWalletController::class, 'index'])->name('wallet');
         Route::get('/wallet/export/csv', [AdminWalletController::class, 'export'])->name('wallet.export');
         Route::post('/wallet/adjust', [AdminWalletController::class, 'adjust'])->name('wallet.adjust');

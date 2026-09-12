@@ -14,6 +14,7 @@
         ['label' => 'Legal Pages', 'route' => 'admin.legal-pages.index', 'icon' => 'ticket', 'active' => 'admin.legal-pages.*'],
         ['label' => 'Orders', 'route' => 'admin.orders', 'icon' => 'receipt', 'active' => 'admin.orders*'],
         ['label' => 'Payments', 'route' => 'admin.payments', 'icon' => 'credit', 'active' => 'admin.payments'],
+        ['label' => 'Earnings', 'route' => 'admin.earnings', 'icon' => 'chart', 'active' => 'admin.earnings*'],
         ['label' => 'Wallet', 'route' => 'admin.wallet', 'icon' => 'credit', 'active' => 'admin.wallet*'],
         ['label' => 'Payment Integration', 'route' => 'admin.payment-integration.edit', 'icon' => 'credit', 'active' => 'admin.payment-integration.*'],
         ['label' => 'Access Servers', 'route' => 'admin.tool-servers.index', 'icon' => 'server', 'active' => 'admin.tool-servers.*'],
